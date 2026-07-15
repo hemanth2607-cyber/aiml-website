@@ -84,6 +84,11 @@
             </div>
         <% } %>
 
+        <!-- Client-Side Mismatch Alert Box -->
+        <div id="register-error-box" class="hidden bg-red-950/50 border border-red-500/30 text-red-300 text-xs p-3 rounded-lg mb-4 sm:mb-6">
+            Passwords do not match. Please verify.
+        </div>
+
         <!-- Form Toggles -->
         <div class="flex border-b border-white/5 mb-6 text-xs sm:text-sm">
             <button id="tab-login-btn" class="w-1/2 pb-3 border-b-2 border-cyan-400 text-white font-semibold focus:outline-none">Sign In</button>
@@ -105,7 +110,7 @@
             </button>
         </form>
 
-        <!-- Sign Up Form (Disabled inputs because user wants signup exclusively through Google SSO) -->
+        <!-- Sign Up Form with Password Confirmation -->
         <form id="form-register" action="/register" method="POST" class="space-y-4 hidden">
             <div>
                 <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">College Email Address</label>
@@ -113,7 +118,11 @@
             </div>
             <div>
                 <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Establish Security Password</label>
-                <input type="password" name="password" required placeholder="enter your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
+                <input type="password" id="register-password" name="password" required placeholder="enter your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Confirm Security Password</label>
+                <input type="password" id="register-confirm" required placeholder="confirm your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
             </div>
             <button type="submit" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-cyan-600/20">
                 Register Account
@@ -153,6 +162,11 @@
         const tabRegisterBtn = document.getElementById('tab-register-btn');
         const formLogin = document.getElementById('form-login');
         const formRegister = document.getElementById('form-register');
+        
+        // Password verification variables
+        const regPassword = document.getElementById('register-password');
+        const regConfirm = document.getElementById('register-confirm');
+        const regErrorBox = document.getElementById('register-error-box');
 
         tabLoginBtn.addEventListener('click', () => {
             tabLoginBtn.classList.add('border-cyan-400', 'text-white');
@@ -161,6 +175,7 @@
             tabRegisterBtn.classList.remove('border-cyan-400', 'text-white');
             formLogin.classList.remove('hidden');
             formRegister.classList.add('hidden');
+            regErrorBox.classList.add('hidden'); // Clear matching alerts on switch
         });
 
         tabRegisterBtn.addEventListener('click', () => {
@@ -170,6 +185,17 @@
             tabLoginBtn.classList.remove('border-cyan-400', 'text-white');
             formRegister.classList.remove('hidden');
             formLogin.classList.add('hidden');
+        });
+
+        // Client-side verification during form submission
+        formRegister.addEventListener('submit', (e) => {
+            if (regPassword.value !== regConfirm.value) {
+                e.preventDefault(); // Stop form submission
+                regErrorBox.classList.remove('hidden'); // Display alert box
+                regConfirm.focus();
+            } else {
+                regErrorBox.classList.add('hidden'); // Hide alert box
+            }
         });
     </script>
 </body>
