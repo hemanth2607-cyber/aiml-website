@@ -211,13 +211,14 @@
                 <h2 class="heading-font text-xs sm:text-sm font-bold text-white uppercase">V.S.B. Registered Student Accounts</h2>
             </div>
             <div class="overflow-x-auto text-[10px] sm:text-xs">
-                <table class="w-full text-left text-gray-300 min-w-[600px]">
+                <table class="w-full text-left text-gray-300 min-w-[700px]">
                     <thead class="uppercase text-gray-400 tracking-wider bg-black/40 border-b border-white/5 font-mono">
                         <tr>
                             <th class="px-4 sm:px-6 py-4">System ID</th>
                             <th class="px-4 sm:px-6 py-4">Student Email (VSB Domain)</th>
                             <th class="px-4 sm:px-6 py-4">Database Access Role</th>
                             <th class="px-4 sm:px-6 py-4">Registration Stamp</th>
+                            <th class="px-4 sm:px-6 py-4 text-right">Actions</th> <!-- Added Header -->
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
@@ -232,11 +233,15 @@
                                         </span>
                                     </td>
                                     <td class="px-4 sm:px-6 py-4 text-gray-400 font-mono"><%= student.created_at %></td>
+                                    <!-- Added Delete Action Cell -->
+                                    <td class="px-4 sm:px-6 py-4 text-right font-mono whitespace-nowrap">
+                                        <a href="/admin/students/delete/<%= student.id %>" onclick="return confirm('Are you sure you want to permanently delete this student account? This will block their sign-in.');" class="text-red-400 hover:text-red-300 transition">Delete</a>
+                                    </td>
                                 </tr>
                             <% }) %>
                         <% } else { %>
                             <tr>
-                                <td colspan="4" class="px-4 sm:px-6 py-8 text-center text-gray-500 font-mono">No verified students registered on this database interface.</td>
+                                <td colspan="5" class="px-4 sm:px-6 py-8 text-center text-gray-500 font-mono">No verified students registered on this database interface.</td>
                             </tr>
                         <% } %>
                     </tbody>

@@ -394,6 +394,20 @@ app.post('/admin/notify', checkAdmin, (req, res) => {
     });
 });
 
+// DELETE STUDENT: Securely remove student credentials from Database (Admin Protected)
+app.get('/admin/students/delete/:id', checkAdmin, (req, res) => {
+    const studentId = req.params.id;
+
+    // Guard: Ensure we only delete student accounts, not administrative accounts
+    pool.query('DELETE FROM users WHERE id = $1 AND role = $2', [studentId, 'student'], (err) => {
+        if (err) {
+            console.error('Error deleting student:', err.message);
+            return res.redirect('/admin?notified=error');
+        }
+        res.redirect('/admin');
+    });
+});
+
 // Pull individual post for inline update rendering
 app.get('/admin/edit/:id', checkAdmin, (req, res) => {
     pool.query('SELECT id, email, role, created_at FROM users WHERE role = $1 ORDER BY id DESC', ['student'], (err, sResult) => {
