@@ -139,9 +139,11 @@ app.get('/login', (req, res) => {
     res.render('login', { error: queryError, success: null });
 });
 
-// Student Sign-Up Routing
+// Student Sign-Up Routing (With Lowercase Normalization)
 app.post('/register', (req, res) => {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
+
     if (!email || !password) {
         return res.render('login', { error: 'Please populate all parameters.', success: null });
     }
@@ -156,9 +158,14 @@ app.post('/register', (req, res) => {
     });
 });
 
-// Login Handlers (With Auto-Seed Admin Fallback)
+// Login Handlers (With Lowercase Normalization and Auto-Seed Admin Fallback)
 app.post('/login', (req, res) => {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
+
+    if (!email || !password) {
+        return res.render('login', { error: 'Please enter all credentials.', success: null });
+    }
 
     pool.query('SELECT * FROM users WHERE email = $1', [email], (err, result) => {
         let user = result && result.rows.length > 0 ? result.rows[0] : null;
@@ -224,7 +231,7 @@ app.get('/auth/google', (req, res) => {
     res.redirect(`${rootUrl}?${queryString}`);
 });
 
-// Capture Callback Code and Authenticate User
+// Capture Callback Code and Authenticate User (With Casing Normalization & Logging)
 app.get('/auth/google/callback', async (req, res) => {
     const { code } = req.query;
     if (!code) return res.redirect('/login?error=Google authentication aborted.');
@@ -259,11 +266,15 @@ app.get('/auth/google/callback', async (req, res) => {
             return res.redirect('/login?error=Email address missing from Google profile.');
         }
 
-        const email = googleUser.email;
+        // Normalize email to lowercase
+        const email = googleUser.email.trim().toLowerCase();
 
         // Check if student identity exists
         pool.query('SELECT * FROM users WHERE email = $1', [email], (err, result) => {
-            if (err) return res.redirect('/login?error=System database error.');
+            if (err) {
+                console.error('Google Callback SQL Lookup Error:', err); // Logs exact error details to Vercel Console
+                return res.redirect('/login?error=System database error.');
+            }
 
             let user = result && result.rows.length > 0 ? result.rows[0] : null;
 
@@ -272,7 +283,8 @@ app.get('/auth/google/callback', async (req, res) => {
                 const dummyPassword = bcrypt.hashSync(Math.random().toString(36), 10);
                 pool.query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING *', 
                     [email, dummyPassword, 'student'], (err, insertResult) => {
-                        if (err || !insertResult || insertResult.rows.length === 0) {
+                        if (err) {
+                            console.error('Google Callback SQL Insert Error:', err);
                             return res.redirect('/login?error=Registration failed.');
                         }
                         const newUser = insertResult.rows[0];
@@ -292,7 +304,7 @@ app.get('/auth/google/callback', async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Google Auth Error:', err);
+        console.error('Google Auth Handshake Error:', err);
         res.redirect('/login?error=Security handshake crash.');
     }
 });
