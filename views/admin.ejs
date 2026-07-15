@@ -73,6 +73,18 @@
             <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 text-[10px] sm:text-xs px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition self-end md:self-auto">Sign Out</a>
         </div>
 
+        <!-- Success & Error Alert Banners -->
+        <% if (success) { %>
+            <div class="bg-green-950/50 border border-green-500/30 text-green-300 text-xs p-4 rounded-xl mb-6">
+                <%= success %>
+            </div>
+        <% } %>
+        <% if (error) { %>
+            <div class="bg-red-950/50 border border-red-500/30 text-red-300 text-xs p-4 rounded-xl mb-6">
+                <%= error %>
+            </div>
+        <% } %>
+
         <!-- Telemetry Statistics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
             <div class="admin-card p-5 sm:p-6 rounded-2xl">
@@ -89,9 +101,10 @@
             </div>
         </div>
 
-        <!-- CRUD Interface: Blog Management Form -->
+        <!-- CRUD Interface: Blog Management & Email Notification Form -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
             
+            <!-- Column 1: Add/Edit Blog -->
             <div class="lg:col-span-1 admin-card p-5 sm:p-6 rounded-2xl h-fit">
                 <h2 class="heading-font text-xs sm:text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-6 uppercase">
                     <%= editBlog ? 'Modify Academic Log' : 'Publish Academic Log' %>
@@ -130,42 +143,59 @@
                 </form>
             </div>
 
-            <!-- Published Department Updates Table list -->
-            <div class="lg:col-span-2 admin-card rounded-2xl overflow-hidden h-fit">
+            <!-- Column 2: Send Email Notifications (New Feature) -->
+            <div class="lg:col-span-1 admin-card p-5 sm:p-6 rounded-2xl h-fit">
+                <h2 class="heading-font text-xs sm:text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-6 uppercase">
+                    Send Student Announcement
+                </h2>
+                <form action="/admin/notify" method="POST" class="space-y-4 text-xs">
+                    <div>
+                        <label class="block text-gray-400 font-mono mb-1">EMAIL SUBJECT</label>
+                        <input type="text" name="subject" required placeholder="e.g., VSB AI&ML Lab Schedule Announcement" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400 transition">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 font-mono mb-1">MESSAGE BODY</label>
+                        <textarea name="message" required rows="10" placeholder="Type the announcement details here..." class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400 transition"></textarea>
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="w-full py-2 bg-gradient-to-tr from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-bold rounded-xl transition">
+                            Dispatch Email Notification
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Column 3: Published Department Updates Table list -->
+            <div class="lg:col-span-1 admin-card rounded-2xl overflow-hidden h-fit">
                 <div class="px-6 py-4 border-b border-white/5 bg-white/5">
-                    <h3 class="heading-font text-xs sm:text-sm font-bold text-white uppercase">Department Updates Registry</h3>
+                    <h3 class="heading-font text-xs sm:text-sm font-bold text-white uppercase">Updates Registry</h3>
                 </div>
                 <div class="overflow-x-auto text-[10px] sm:text-xs">
-                    <table class="w-full text-left text-gray-300 min-w-[500px]">
+                    <table class="w-full text-left text-gray-300 min-w-[300px]">
                         <thead class="bg-black/40 border-b border-white/5 text-gray-400 font-mono">
                             <tr>
-                                <th class="px-4 sm:px-6 py-3">Category</th>
-                                <th class="px-4 sm:px-6 py-3">Title</th>
-                                <th class="px-4 sm:px-6 py-3">Date</th>
-                                <th class="px-4 sm:px-6 py-3 text-right">Actions</th>
+                                <th class="px-4 py-3">Title</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5">
                             <% if (blogs && blogs.length > 0) { %>
                                 <% blogs.forEach(blog => { %>
                                     <tr class="hover:bg-white/5 transition-colors">
-                                        <td class="px-4 sm:px-6 py-4">
-                                            <span class="px-2 py-0.5 border border-purple-500/20 text-purple-300 bg-purple-950/20 rounded-full font-mono">
-                                                <%= blog.category %>
-                                            </span>
+                                        <td class="px-4 py-4 font-semibold text-white">
+                                            <span class="text-[9px] block text-purple-400 font-mono"><%= blog.category %></span>
+                                            <%= blog.title %>
                                         </td>
-                                        <td class="px-4 sm:px-6 py-4 font-semibold text-white"><%= blog.title %></td>
-                                        <td class="px-4 sm:px-6 py-4 font-mono text-gray-400"><%= blog.date %></td>
-                                        <td class="px-4 sm:px-6 py-4 text-right space-x-2 font-mono">
+                                        <td class="px-4 py-4 text-right space-x-2 font-mono whitespace-nowrap">
                                             <a href="/admin/edit/<%= blog.id %>" class="text-cyan-400 hover:text-cyan-300 transition">Edit</a>
                                             <span class="text-gray-700">|</span>
-                                            <a href="/admin/blogs/delete/<%= blog.id %>" onclick="return confirm('Confirm entry deletion?');" class="text-red-400 hover:text-red-300 transition">Delete</a>
+                                            <a href="/admin/blogs/delete/<%= blog.id %>" onclick="return confirm('Confirm entry deletion?');" class="text-red-400 hover:text-red-300 transition">Del</a>
                                         </td>
                                     </tr>
                                 <% }) %>
                             <% } else { %>
                                 <tr>
-                                    <td colspan="4" class="px-4 sm:px-6 py-8 text-center text-gray-500 font-mono">No entries active inside data structures.</td>
+                                    <td colspan="2" class="px-4 py-8 text-center text-gray-500 font-mono">No entries.</td>
                                 </tr>
                             <% } %>
                         </tbody>
