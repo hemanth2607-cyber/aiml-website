@@ -279,21 +279,9 @@ app.get('/auth/google/callback', async (req, res) => {
             let user = result && result.rows.length > 0 ? result.rows[0] : null;
 
             if (!user) {
-                // If first time logging in, register them automatically
-                const dummyPassword = bcrypt.hashSync(Math.random().toString(36), 10);
-                pool.query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING *', 
-                    [email, dummyPassword, 'student'], (err, insertResult) => {
-                        if (err) {
-                            console.error('Google Callback SQL Insert Error:', err);
-                            return res.redirect('/login?error=Registration failed.');
-                        }
-                        const newUser = insertResult.rows[0];
-                        req.session.userId = newUser.id;
-                        req.session.userEmail = newUser.email;
-                        req.session.userRole = newUser.role;
-                        return res.redirect('/');
-                    }
-                );
+                // NEW USER DETECTED: Redirect them to the set-password page instead of auto-logging in
+                req.session.tempGoogleEmail = email; // Store email temporarily in session
+                return res.redirect('/register/google-setup');
             } else {
                 // Account exists, establish session
                 req.session.userId = user.id;
@@ -307,6 +295,46 @@ app.get('/auth/google/callback', async (req, res) => {
         console.error('Google Auth Handshake Error:', err);
         res.redirect('/login?error=Security handshake crash.');
     }
+});
+
+// GET: Render the Password Setup Page for New Google Users
+app.get('/register/google-setup', (req, res) => {
+    if (!req.session.tempGoogleEmail) {
+        return res.redirect('/login?error=Google authentication session expired.');
+    }
+    res.render('google-setup', { email: req.session.tempGoogleEmail, error: null });
+});
+
+// POST: Save New Google User with Custom Password
+app.post('/register/google-complete', (req, res) => {
+    const email = req.session.tempGoogleEmail;
+    const { password } = req.body;
+
+    if (!email) {
+        return res.redirect('/login?error=Google authentication session expired.');
+    }
+    if (!password) {
+        return res.render('google-setup', { email, error: 'Please enter a password.' });
+    }
+
+    const secureHash = bcrypt.hashSync(password, 10);
+    pool.query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING *', 
+        [email, secureHash, 'student'], (err, result) => {
+            if (err) {
+                console.error('Google Complete SQL Insert Error:', err);
+                return res.render('google-setup', { email, error: 'Failed to register account.' });
+            }
+
+            // Registration successful: Clear temp variable and establish login session
+            delete req.session.tempGoogleEmail;
+            
+            const newUser = result.rows[0];
+            req.session.userId = newUser.id;
+            req.session.userEmail = newUser.email;
+            req.session.userRole = newUser.role;
+            return res.redirect('/');
+        }
+    );
 });
 
 // Terminate Session

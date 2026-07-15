@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Setup | V.S.B. Engineering College</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
+        
+        * {
+            cursor: none !important;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at center, #0B001A 0%, #03000a 100%);
+            color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .heading-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .galaxy-card {
+            background: rgba(13, 8, 28, 0.85);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        }
+
+        /* Custom Cosmic Cursor */
+        .custom-cursor {
+            width: 14px;
+            height: 14px;
+            background: #a855f7;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #a855f7, 0 0 20px #2563eb;
+            transition: transform 0.08s ease-out;
+        }
+
+        @media (max-width: 640px) {
+            .custom-cursor {
+                display: none !important;
+            }
+            * {
+                cursor: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6">
+
+    <!-- Active Custom Cursor -->
+    <div id="cursor-core" class="custom-cursor"></div>
+
+    <div class="w-full max-w-md galaxy-card p-6 sm:p-8 rounded-3xl">
+        <div class="text-center mb-6 sm:mb-8">
+            <div class="mb-4 flex justify-center">
+                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-12 h-12 sm:w-16 sm:h-16 object-contain">
+            </div>
+            <h1 class="heading-font text-lg sm:text-xl font-bold tracking-wide">COMPLETE SETUP</h1>
+            <p class="text-gray-400 text-[10px] sm:text-xs mt-1">V.S.B. Engineering College</p>
+        </div>
+
+        <!-- Alert Cards -->
+        <% if (error) { %>
+            <div class="bg-red-950/50 border border-red-500/30 text-red-300 text-xs p-3 rounded-lg mb-4 sm:mb-6">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <!-- Client-Side Mismatch Alert Box -->
+        <div id="register-error-box" class="hidden bg-red-950/50 border border-red-500/30 text-red-300 text-xs p-3 rounded-lg mb-4 sm:mb-6">
+            Passwords do not match. Please verify.
+        </div>
+
+        <!-- Setup Form -->
+        <form id="form-setup" action="/register/google-complete" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Verified Google Email</label>
+                <!-- Email is disabled for input but still visible, we pass a hidden field to actually submit it -->
+                <input type="email" disabled value="<%= email %>" class="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-400 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Set Account Password</label>
+                <input type="password" id="register-password" name="password" required placeholder="enter your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Confirm Account Password</label>
+                <input type="password" id="register-confirm" required placeholder="confirm your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+            </div>
+            <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-purple-600/20">
+                Complete Registration
+            </button>
+        </form>
+    </div>
+
+    <!-- Interface Controller -->
+    <script>
+        const cursor = document.getElementById('cursor-core');
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth > 640) {
+                cursor.style.left = `${e.clientX}px`;
+                cursor.style.top = `${e.clientY}px`;
+            }
+        });
+
+        const formSetup = document.getElementById('form-setup');
+        const regPassword = document.getElementById('register-password');
+        const regConfirm = document.getElementById('register-confirm');
+        const regErrorBox = document.getElementById('register-error-box');
+
+        // Client-side verification during form submission
+        formSetup.addEventListener('submit', (e) => {
+            if (regPassword.value !== regConfirm.value) {
+                e.preventDefault(); // Stop form submission
+                regErrorBox.classList.remove('hidden'); // Display alert box
+                regConfirm.focus();
+            } else {
+                regErrorBox.classList.add('hidden'); // Hide alert box
+            }
+        });
+    </script>
+</body>
+</html>
