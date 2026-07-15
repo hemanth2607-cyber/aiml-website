@@ -46,37 +46,46 @@
             box-shadow: 0 0 10px #a855f7, 0 0 20px #2563eb;
             transition: transform 0.08s ease-out;
         }
+
+        @media (max-width: 640px) {
+            .custom-cursor {
+                display: none !important;
+            }
+            * {
+                cursor: auto !important;
+            }
+        }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4 sm:p-6">
 
     <!-- Active Custom Cursor -->
     <div id="cursor-core" class="custom-cursor"></div>
 
-    <div class="w-full max-w-md galaxy-card p-8 rounded-3xl">
-        <div class="text-center mb-8">
+    <div class="w-full max-w-md galaxy-card p-6 sm:p-8 rounded-3xl">
+        <div class="text-center mb-6 sm:mb-8">
             <div class="mb-4 flex justify-center">
-                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-16 h-16 object-contain">
+                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-12 h-12 sm:w-16 sm:h-16 object-contain">
             </div>
-            <a href="/" class="heading-font text-xs tracking-widest text-cyan-400 hover:text-cyan-300 block mb-2">← Back to Portal</a>
-            <h1 class="heading-font text-xl font-bold tracking-wide">SECURE ACCESS GATE</h1>
-            <p class="text-gray-400 text-xs mt-1">V.S.B. Engineering College</p>
+            <a href="/" class="heading-font text-[10px] tracking-widest text-cyan-400 hover:text-cyan-300 block mb-2">← Back to Portal</a>
+            <h1 class="heading-font text-lg sm:text-xl font-bold tracking-wide">SECURE ACCESS GATE</h1>
+            <p class="text-gray-400 text-[10px] sm:text-xs mt-1">V.S.B. Engineering College</p>
         </div>
 
         <!-- Alert Cards -->
         <% if (error) { %>
-            <div class="bg-red-950/50 border border-red-500/30 text-red-300 text-xs p-3 rounded-lg mb-6">
+            <div class="bg-red-950/50 border border-red-500/30 text-red-300 text-xs p-3 rounded-lg mb-4 sm:mb-6">
                 <%= error %>
             </div>
         <% } %>
         <% if (success) { %>
-            <div class="bg-green-950/50 border border-green-500/30 text-green-300 text-xs p-3 rounded-lg mb-6">
+            <div class="bg-green-950/50 border border-green-500/30 text-green-300 text-xs p-3 rounded-lg mb-4 sm:mb-6">
                 <%= success %>
             </div>
         <% } %>
 
         <!-- Form Toggles -->
-        <div class="flex border-b border-white/5 mb-6 text-sm">
+        <div class="flex border-b border-white/5 mb-6 text-xs sm:text-sm">
             <button id="tab-login-btn" class="w-1/2 pb-3 border-b-2 border-cyan-400 text-white font-semibold focus:outline-none">Sign In</button>
             <button id="tab-register-btn" class="w-1/2 pb-3 border-b-2 border-transparent text-gray-400 font-semibold focus:outline-none">Sign Up</button>
         </div>
@@ -84,14 +93,14 @@
         <!-- Sign In Form -->
         <form id="form-login" action="/login" method="POST" class="space-y-4">
             <div>
-                <label class="block text-xs uppercase text-gray-400 font-semibold tracking-wider mb-2">Email Address</label>
-                <input type="email" name="email" required placeholder="name@vsb.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Email Address</label>
+                <input type="email" name="email" required placeholder="name@vsb.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
             </div>
             <div>
-                <label class="block text-xs uppercase text-gray-400 font-semibold tracking-wider mb-2">Security Key (Password)</label>
-                <input type="password" name="password" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Security Key (Password)</label>
+                <input type="password" name="password" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
             </div>
-            <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold transition mt-6 shadow-lg shadow-purple-600/20">
+            <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-purple-600/20">
                 Authenticate User
             </button>
         </form>
@@ -99,14 +108,14 @@
         <!-- Sign Up Form -->
         <form id="form-register" action="/register" method="POST" class="space-y-4 hidden">
             <div>
-                <label class="block text-xs uppercase text-gray-400 font-semibold tracking-wider mb-2">College Email Address</label>
-                <input type="email" name="email" required placeholder="student@vsb.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-400 transition">
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">College Email Address</label>
+                <input type="email" name="email" required placeholder="student@vsb.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
             </div>
             <div>
-                <label class="block text-xs uppercase text-gray-400 font-semibold tracking-wider mb-2">Establish Security Password</label>
-                <input type="password" name="password" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-400 transition">
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Establish Security Password</label>
+                <input type="password" name="password" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
             </div>
-            <button type="submit" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-semibold transition mt-6 shadow-lg shadow-cyan-600/20">
+            <button type="submit" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-cyan-600/20">
                 Register Account
             </button>
         </form>
@@ -116,8 +125,10 @@
     <script>
         const cursor = document.getElementById('cursor-core');
         document.addEventListener('mousemove', (e) => {
-            cursor.style.left = `${e.clientX}px`;
-            cursor.style.top = `${e.clientY}px`;
+            if (window.innerWidth > 640) {
+                cursor.style.left = `${e.clientX}px`;
+                cursor.style.top = `${e.clientY}px`;
+            }
         });
 
         const tabLoginBtn = document.getElementById('tab-login-btn');

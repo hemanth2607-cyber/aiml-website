@@ -67,7 +67,7 @@
             top: 0;
             width: 55vw;
             height: 100vh;
-            background-color: #1a103c; /* Pure opaque deep violet */
+            background-color: #1a103c; 
             z-index: 50;
             display: flex;
             flex-direction: column;
@@ -94,6 +94,7 @@
             border-radius: 50%;
         }
 
+        /* Desktop Cloud Sizes */
         .l-bubble-1 { width: 180px; height: 180px; right: -90px; top: 10%; border-right: 8px solid #311d6b; }
         .l-bubble-2 { width: 240px; height: 240px; right: -120px; top: 40%; border-right: 8px solid #311d6b; }
         .l-bubble-3 { width: 190px; height: 190px; right: -95px; top: 75%; border-right: 8px solid #311d6b; }
@@ -101,6 +102,25 @@
         .r-bubble-1 { width: 200px; height: 200px; left: -100px; top: 5%; border-left: 8px solid #311d6b; }
         .r-bubble-2 { width: 250px; height: 250px; left: -125px; top: 35%; border-left: 8px solid #311d6b; }
         .r-bubble-3 { width: 180px; height: 180px; left: -90px; top: 70%; border-left: 8px solid #311d6b; }
+
+        /* Responsive Mobile Cloud Sizes */
+        @media (max-width: 640px) {
+            .l-bubble-1 { width: 90px; height: 90px; right: -45px; border-right-width: 4px; }
+            .l-bubble-2 { width: 120px; height: 120px; right: -60px; border-right-width: 4px; }
+            .l-bubble-3 { width: 95px; height: 95px; right: -47px; border-right-width: 4px; }
+
+            .r-bubble-1 { width: 100px; height: 100px; left: -50px; border-left-width: 4px; }
+            .r-bubble-2 { width: 130px; height: 130px; left: -65px; border-left-width: 4px; }
+            .r-bubble-3 { width: 90px; height: 90px; left: -45px; border-left-width: 4px; }
+            
+            /* Disable custom cursor trail on mobile touch screens to prevent lag */
+            .custom-cursor, .custom-cursor-trail {
+                display: none !important;
+            }
+            * {
+                cursor: auto !important;
+            }
+        }
 
         /* Welcome Reveal Title Screen */
         #splash-screen {
@@ -156,40 +176,41 @@
     </div>
 
     <!-- Entrance Title Card -->
-    <div id="splash-screen">
-        <div class="text-center px-4">
+    <div id="splash-screen" class="px-4">
+        <div class="text-center max-w-4xl mx-auto">
             <!-- VSB Official Logo -->
-            <div class="mb-6 flex justify-center">
-                <img src="/images/vsb-logo.png" alt="V.S.B. College Logo" class="w-32 h-32 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
+            <div class="mb-4 sm:mb-6 flex justify-center">
+                <img src="/images/vsb-logo.png" alt="V.S.B. College Logo" class="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
             </div>
-            <span class="heading-font text-xs tracking-[0.4em] uppercase text-cyan-400 block mb-2 font-semibold">V.S.B. Engineering College</span>
-            <h1 class="heading-font text-3xl md:text-5xl font-extrabold text-white tracking-wider leading-tight uppercase">
+            <span class="heading-font text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.4em] uppercase text-cyan-400 block mb-2 font-semibold">V.S.B. Engineering College</span>
+            <h1 class="heading-font text-xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-wider leading-tight uppercase">
                 Artificial Intelligence <br>&amp; <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 neon-glow-cyan">Machine Learning</span>
             </h1>
 
-            <p class="text-gray-500 text-[10px] mt-12 animate-pulse font-mono tracking-widest">
+            <p class="text-gray-500 text-[9px] sm:text-[10px] mt-8 sm:mt-12 animate-pulse font-mono tracking-widest">
                 [ SCROLL DOWN SLOWLY TO REVEAL ]
             </p>
         </div>
     </div>
 
     <!-- Global Navigation -->
-    <nav class="fixed top-0 left-0 w-full z-40 bg-black/40 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center">
+    <nav class="fixed top-0 left-0 w-full z-40 bg-black/50 backdrop-blur-md border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
         <!-- Brand Header with Logo and Accreditation Details Sub-label -->
-        <div class="flex flex-col items-start">
-            <div class="flex items-center space-x-3">
-                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-8 h-8 object-contain">
-                <a href="/" class="heading-font text-sm font-bold tracking-widest text-white">
+        <div class="flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
+                <a href="/" class="heading-font text-xs sm:text-sm font-bold tracking-widest text-white">
                     V.S.B. AI &amp; ML
                 </a>
             </div>
-            <!-- Accreditation Details under the Top Left corner brand block -->
-            <div class="text-[10px] text-gray-400 mt-1 font-normal tracking-wide leading-none" style="font-family: 'Times New Roman', Times, serif;">
+            <!-- Accreditation Details (Wrapped dynamically on mobile) -->
+            <div class="text-[8px] sm:text-[10px] text-gray-400 mt-1 font-normal tracking-wide leading-none max-w-[240px] sm:max-w-md" style="font-family: 'Times New Roman', Times, serif;">
                 Affiliated to Anna University, Chennai &amp; Approved by AICTE, New Delhi
             </div>
         </div>
         
-        <div class="flex items-center space-x-6 text-xs font-mono">
+        <!-- Navigation Menu -->
+        <div class="flex items-center space-x-4 sm:space-x-6 text-[10px] sm:text-xs font-mono">
             <a href="#feed" class="text-gray-300 hover:text-cyan-400 transition">Feeds</a>
             <a href="#blogs" class="text-gray-300 hover:text-purple-400 transition">Syllabus &amp; Logs</a>
             <% if (user) { %>
@@ -197,54 +218,54 @@
                     <a href="/admin" class="text-yellow-400 hover:text-yellow-300 transition">Admin Console</a>
                 <% } %>
                 <span class="text-purple-300 font-semibold"><%= user.email.split('@')[0] %></span>
-                <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-3 py-1 rounded transition">Exit</a>
+                <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-2 py-0.5 sm:px-3 sm:py-1 rounded transition">Exit</a>
             <% } else { %>
-                <a href="/login" class="bg-purple-900/40 border border-purple-500/30 hover:bg-purple-800/60 text-purple-200 px-3 py-1.5 rounded transition">Portal Sign-in</a>
+                <a href="/login" class="bg-purple-900/40 border border-purple-500/30 hover:bg-purple-800/60 text-purple-200 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded transition">Portal Sign-in</a>
             <% } %>
         </div>
     </nav>
 
     <!-- Main Dynamic Interface Layout -->
-    <main id="main-content" class="relative z-30 max-w-6xl mx-auto px-6 pb-24" style="opacity: 0; transform: translateY(60px); will-change: opacity, transform;">
+    <main id="main-content" class="relative z-30 max-w-6xl mx-auto px-4 sm:px-6 pb-24" style="opacity: 0; transform: translateY(40px); will-change: opacity, transform;">
         
         <!-- VSB College Introductory Banner -->
-        <header class="mb-24 text-center">
+        <header class="mb-16 sm:mb-24 text-center">
             <div class="flex justify-center mb-4">
-                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-16 h-16 object-contain">
+                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-12 h-12 sm:w-16 sm:h-16 object-contain">
             </div>
-            <span class="text-xs uppercase font-mono tracking-widest text-purple-400">Department of AI &amp; ML</span>
-            <h2 class="heading-font text-3xl md:text-4xl font-black text-white mt-2">
+            <span class="text-[10px] sm:text-xs uppercase font-mono tracking-widest text-purple-400">Department of AI &amp; ML</span>
+            <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl font-black text-white mt-2 px-2">
                 V.S.B. Engineering College
             </h2>
-            <p class="text-gray-400 text-sm md:text-base max-w-xl mx-auto mt-4 leading-relaxed">
+            <p class="text-gray-400 text-xs sm:text-sm md:text-base max-w-xl mx-auto mt-4 leading-relaxed px-4">
                 Empowering the future through state-of-the-art computational algorithms, deep learning models, and complex data analytic infrastructures.
             </p>
         </header>
 
         <!-- Department Overview Static Grid -->
-        <section id="feed" class="mb-24 scroll-mt-24">
-            <div class="flex items-center space-x-3 mb-8">
+        <section id="feed" class="mb-16 sm:mb-24 scroll-mt-24">
+            <div class="flex items-center space-x-3 mb-6 sm:mb-8">
                 <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-                <h3 class="heading-font text-xl font-bold tracking-wider">Department Features</h3>
+                <h3 class="heading-font text-lg sm:text-xl font-bold tracking-wider">Department Features</h3>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="galaxy-card p-6 rounded-2xl">
-                    <div class="text-xs text-purple-400 font-mono tracking-widest mb-2">[ INFRASTRUCTURE ]</div>
-                    <h4 class="heading-font text-lg font-bold mb-2 text-white">Modern GPU Lab</h4>
+                    <div class="text-[10px] text-purple-400 font-mono tracking-widest mb-2">[ INFRASTRUCTURE ]</div>
+                    <h4 class="heading-font text-base sm:text-lg font-bold mb-2 text-white">Modern GPU Lab</h4>
                     <p class="text-gray-400 text-xs leading-relaxed">
                         Dedicated computing workstations equipped with deep learning software stacks for training neural networks.
                     </p>
                 </div>
                 <div class="galaxy-card p-6 rounded-2xl">
-                    <div class="text-xs text-cyan-400 font-mono tracking-widest mb-2">[ CURRICULUM ]</div>
-                    <h4 class="heading-font text-lg font-bold mb-2 text-white">Industry Alignment</h4>
+                    <div class="text-[10px] text-cyan-400 font-mono tracking-widest mb-2">[ CURRICULUM ]</div>
+                    <h4 class="heading-font text-base sm:text-lg font-bold mb-2 text-white">Industry Alignment</h4>
                     <p class="text-gray-400 text-xs leading-relaxed">
                         Course structures oriented around continuous real-world integration, natural language processing, and robotics.
                     </p>
                 </div>
                 <div class="galaxy-card p-6 rounded-2xl">
-                    <div class="text-xs text-pink-400 font-mono tracking-widest mb-2">[ COLLABORATION ]</div>
-                    <h4 class="heading-font text-lg font-bold mb-2 text-white">Global Research</h4>
+                    <div class="text-[10px] text-pink-400 font-mono tracking-widest mb-2">[ COLLABORATION ]</div>
+                    <h4 class="heading-font text-base sm:text-lg font-bold mb-2 text-white">Global Research</h4>
                     <p class="text-gray-400 text-xs leading-relaxed">
                         Working in partnership with leading tech clusters to support student project internships and secure placements.
                     </p>
@@ -254,24 +275,24 @@
 
         <!-- Dynamic Blogs Section from Database -->
         <section id="blogs" class="scroll-mt-24">
-            <div class="flex items-center space-x-3 mb-8">
+            <div class="flex items-center space-x-3 mb-6 sm:mb-8">
                 <span class="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-                <h3 class="heading-font text-xl font-bold tracking-wider">Academic Publications &amp; News</h3>
+                <h3 class="heading-font text-lg sm:text-xl font-bold tracking-wider">Academic Publications &amp; News</h3>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                 <% if (blogs && blogs.length > 0) { %>
                     <% blogs.forEach(blog => { %>
-                        <article class="galaxy-card p-8 rounded-2xl flex flex-col justify-between">
+                        <article class="galaxy-card p-6 sm:p-8 rounded-2xl flex flex-col justify-between">
                             <div>
-                                <div class="flex justify-between items-center text-xs text-gray-500 mb-4 font-mono">
+                                <div class="flex justify-between items-center text-[10px] text-gray-500 mb-4 font-mono">
                                     <span class="border border-purple-500/20 text-purple-300 bg-purple-950/20 px-2 py-0.5 rounded-full"><%= blog.category %></span>
                                     <span><%= blog.date %></span>
                                 </div>
-                                <h4 class="heading-font text-xl font-bold text-white mb-2"><%= blog.title %></h4>
+                                <h4 class="heading-font text-lg sm:text-xl font-bold text-white mb-2"><%= blog.title %></h4>
                                 <p class="text-gray-400 text-xs leading-relaxed mb-6"><%= blog.summary %></p>
                             </div>
-                            <div class="flex justify-between items-center pt-4 border-t border-white/5 text-xs text-gray-500 font-mono">
+                            <div class="flex justify-between items-center pt-4 border-t border-white/5 text-[10px] sm:text-xs text-gray-500 font-mono">
                                 <span>Registry: Official VSB Source</span>
                                 <span class="text-cyan-400 font-semibold cursor-pointer">Explore →</span>
                             </div>
@@ -285,9 +306,9 @@
     </main>
 
     <!-- Global Footer -->
-    <footer class="border-t border-white/5 py-12 relative z-30 bg-black/60 backdrop-blur-md mt-24 text-center">
-        <p class="text-xs text-gray-400 font-normal">V.S.B. Engineering College, Karur, Tamil Nadu, India.</p>
-        <p class="text-xs text-gray-600 mt-2">&copy; 2025 VSB Department of Artificial Intelligence and Machine Learning. All Rights Reserved.</p>
+    <footer class="border-t border-white/5 py-8 sm:py-12 relative z-30 bg-black/60 backdrop-blur-md mt-24 text-center px-4">
+        <p class="text-[10px] sm:text-xs text-gray-400 font-normal">V.S.B. Engineering College, Karur, Tamil Nadu, India.</p>
+        <p class="text-[9px] sm:text-xs text-gray-600 mt-2">&copy; 2025 VSB Department of Artificial Intelligence and Machine Learning. All Rights Reserved.</p>
     </footer>
 
     <!-- Scripting for Cursors, Stars, and Bidirectional Scroll Animations -->
@@ -430,7 +451,7 @@
 
             // Directly map calculated progress to transform matrix frames
             mainContent.style.opacity = `${contentProgress}`;
-            mainContent.style.transform = `translateY(${(1 - contentProgress) * 50}px)`;
+            mainContent.style.transform = `translateY(${(1 - contentProgress) * 40}px)`;
 
             requestAnimationFrame(updateParallaxFrames);
         }
