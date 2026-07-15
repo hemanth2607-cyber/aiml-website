@@ -3,6 +3,8 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
+const svgCaptcha = require('svg-captcha'); // Added free self-contained captcha
+const crypto = require('crypto');
 const path = require('path');
 
 const app = express();
@@ -64,6 +66,14 @@ function verifyDatabaseTables() {
     )`, (err) => {
         if (err) console.error('Error creating users table:', err.message);
         
+        // Dynamic Column Alterations for Password Recovery Tokens
+        pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT', (err) => {
+            if (err) console.error('Error adding reset_token column:', err.message);
+        });
+        pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP', (err) => {
+            if (err) console.error('Error adding reset_token_expires column:', err.message);
+        });
+
         // Create Initial Admin Account
         const defaultAdmin = 'admin@vsb.edu';
         pool.query('SELECT * FROM users WHERE email = $1', [defaultAdmin], (err, result) => {
@@ -124,6 +134,19 @@ const transporter = nodemailer.createTransport({
 // 3. PORTAL ENDPOINTS
 // ========================================================================
 
+// GET: Generate and return an inline SVG CAPTCHA (Customized for Galaxy theme)
+app.get('/captcha', (req, res) => {
+    const captcha = svgCaptcha.create({
+        size: 4, // 4-character code
+        noise: 2, // minor noise lines to distract bots
+        color: true,
+        background: '#130d24' // exact matching dark purple background
+    });
+    req.session.captcha = captcha.text.toLowerCase(); // save text to compare on submit
+    res.type('svg');
+    res.status(200).send(captcha.data);
+});
+
 // Home Page
 app.get('/', (req, res) => {
     pool.query('SELECT * FROM blogs ORDER BY id DESC', (err, result) => {
@@ -136,16 +159,22 @@ app.get('/', (req, res) => {
 app.get('/login', (req, res) => {
     if (req.session.userId) return res.redirect('/');
     const queryError = req.query.error || null;
-    res.render('login', { error: queryError, success: null });
+    const querySuccess = req.query.success || null;
+    res.render('login', { error: queryError, success: querySuccess });
 });
 
-// Student Sign-Up Routing (With Lowercase Normalization)
+// Student Sign-Up Routing (With Lowercase Normalization & CAPTCHA verification)
 app.post('/register', (req, res) => {
-    const { password } = req.body;
+    const { password, captcha } = req.body;
     const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
 
-    if (!email || !password) {
-        return res.render('login', { error: 'Please populate all parameters.', success: null });
+    if (!email || !password || !captcha) {
+        return res.render('login', { error: 'Please enter all registration credentials.', success: null });
+    }
+
+    // CAPTCHA verification check
+    if (!req.session.captcha || captcha.trim().toLowerCase() !== req.session.captcha) {
+        return res.render('login', { error: 'Incorrect CAPTCHA code. Please try again.', success: null });
     }
 
     const secureHash = bcrypt.hashSync(password, 10);
@@ -158,13 +187,18 @@ app.post('/register', (req, res) => {
     });
 });
 
-// Login Handlers (With Lowercase Normalization and Auto-Seed Admin Fallback)
+// Login Handlers (With CAPTCHA verification & Auto-Seed Admin Fallback)
 app.post('/login', (req, res) => {
-    const { password } = req.body;
+    const { password, captcha } = req.body;
     const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
 
-    if (!email || !password) {
+    if (!email || !password || !captcha) {
         return res.render('login', { error: 'Please enter all credentials.', success: null });
+    }
+
+    // CAPTCHA verification check
+    if (!req.session.captcha || captcha.trim().toLowerCase() !== req.session.captcha) {
+        return res.render('login', { error: 'Incorrect CAPTCHA code. Please try again.', success: null });
     }
 
     pool.query('SELECT * FROM users WHERE email = $1', [email], (err, result) => {
@@ -210,7 +244,122 @@ app.post('/login', (req, res) => {
 });
 
 // ========================================================================
-// 4. GOOGLE OAUTH 2.0 CHANNELS (Nodemailer and Fetch compatible)
+// 4. PASSWORD RECOVERY ROUTING (Nodemailer, Crypto & CAPTCHA safe)
+// ========================================================================
+
+// GET: Render the Password Recovery request page
+app.get('/forgot-password', (req, res) => {
+    res.render('forgot-password', { error: null, success: null });
+});
+
+// POST: Generate random secure token and email the recovery link with CAPTCHA protection
+app.post('/forgot-password', (req, res) => {
+    const { captcha } = req.body;
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
+
+    if (!email || !captcha) {
+        return res.render('forgot-password', { error: 'Please populate all fields.', success: null });
+    }
+
+    // CAPTCHA check
+    if (!req.session.captcha || captcha.trim().toLowerCase() !== req.session.captcha) {
+        return res.render('forgot-password', { error: 'Incorrect CAPTCHA code. Please try again.', success: null });
+    }
+
+    // Verify if email is actually registered
+    pool.query('SELECT * FROM users WHERE email = $1', [email], (err, result) => {
+        if (err || result.rows.length === 0) {
+            return res.render('forgot-password', { error: null, success: 'If that email is registered, a password recovery link has been dispatched.' });
+        }
+
+        const resetToken = crypto.randomBytes(20).toString('hex');
+        
+        // Store Token & Expiration inside database (1 hour duration)
+        pool.query(`UPDATE users 
+                    SET reset_token = $1, reset_token_expires = NOW() + INTERVAL '1 hour' 
+                    WHERE email = $2`, [resetToken, email], (err) => {
+            if (err) {
+                console.error('Password Reset Token Save Error:', err);
+                return res.render('forgot-password', { error: 'System database error.', success: null });
+            }
+
+            // Construct Host URL depending on development vs production
+            const hostUrl = req.headers.host.includes('localhost') ? `http://${req.headers.host}` : `https://${req.headers.host}`;
+            const recoveryLink = `${hostUrl}/reset-password/${resetToken}`;
+
+            const mailOptions = {
+                from: `"VSB AI & ML Department" <${process.env.SMTP_USER}>`,
+                to: email,
+                subject: 'Secure Password Reset Link | VSB AI&ML',
+                html: `<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #0d081c; color: #f3f4f6; border-radius: 12px; max-w: 500px; margin: auto;">
+                         <h2 style="color: #06b6d4; font-family: 'Orbitron', sans-serif; text-align: center;">Password Recovery</h2>
+                         <p style="font-size: 14px; line-height: 1.6; color: #d1d5db;">You are receiving this email because you (or someone else) requested a password recovery setup for your VSB AI &amp; ML student account.</p>
+                         <div style="text-align: center; margin: 30px 0;">
+                           <a href="${recoveryLink}" style="background-color: #a855f7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 0 15px rgba(168,85,247,0.4);">Reset Account Password</a>
+                         </div>
+                         <p style="font-size: 12px; color: #9ca3af;">If you did not request this, please ignore this email. This link will expire in 1 hour.</p>
+                         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 20px;">
+                         <p style="font-size: 10px; color: #6b7280; text-align: center;">This is an automated notification from the V.S.B. AI &amp; ML Academic Portal.</p>
+                       </div>`
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error('SMTP Reset Send Error:', error);
+                    return res.render('forgot-password', { error: 'Failed to send recovery email. Contact admin.', success: null });
+                }
+                res.render('forgot-password', { error: null, success: 'If that email is registered, a password recovery link has been dispatched.' });
+            });
+        });
+    });
+});
+
+// GET: Validate token from URL and render the password replacement form
+app.get('/reset-password/:token', (req, res) => {
+    const { token } = req.params;
+
+    // Verify token exists and hasn't expired
+    pool.query(`SELECT * FROM users 
+                WHERE reset_token = $1 AND reset_token_expires > NOW()`, [token], (err, result) => {
+        if (err || !result || result.rows.length === 0) {
+            return res.redirect('/login?error=Password reset link is invalid or has expired.');
+        }
+        res.render('reset-password', { token, error: null });
+    });
+});
+
+// POST: Execute the password override and secure the new password
+app.post('/reset-password', (req, res) => {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+        return res.redirect('/login?error=Password reset session expired.');
+    }
+
+    // Double check token validity
+    pool.query(`SELECT * FROM users 
+                WHERE reset_token = $1 AND reset_token_expires > NOW()`, [token], (err, result) => {
+        if (err || !result || result.rows.length === 0) {
+            return res.redirect('/login?error=Password reset link is invalid or has expired.');
+        }
+
+        const secureHash = bcrypt.hashSync(password, 10);
+
+        // Update password and clear token
+        pool.query(`UPDATE users 
+                    SET password = $1, reset_token = NULL, reset_token_expires = NULL 
+                    WHERE reset_token = $2`, [secureHash, token], (err) => {
+            if (err) {
+                console.error('Password Reset Execute Error:', err);
+                return res.render('reset-password', { token, error: 'Database update failed.' });
+            }
+            res.redirect('/login?success=Password updated successfully. You can now login.');
+        });
+    });
+});
+
+// ========================================================================
+// 5. GOOGLE OAUTH 2.0 CHANNELS (Nodemailer and Fetch compatible)
 // ========================================================================
 
 // Redirect to Google Authentication Screen

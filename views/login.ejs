@@ -104,7 +104,23 @@
             <div>
                 <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Security Key (Password)</label>
                 <input type="password" name="password" required placeholder="enter your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+                
+                <!-- Forgot Password Link -->
+                <div class="mt-2 text-right">
+                    <a href="/forgot-password" class="text-[10px] text-cyan-400 hover:text-cyan-300 font-mono transition">Forgot Password?</a>
+                </div>
             </div>
+
+            <!-- Inline CAPTCHA Integration (Sign-In) -->
+            <div class="bg-white/5 border border-white/5 p-4 rounded-xl space-y-3">
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Bot Protection Challenge</label>
+                <div class="flex items-center space-x-3">
+                    <img id="login-captcha-img" src="/captcha" alt="CAPTCHA" class="rounded-xl h-10 border border-white/10 cursor-pointer w-1/2 object-cover" onclick="this.src='/captcha?'+Date.now()" title="Click to Refresh">
+                    <input type="text" name="captcha" required placeholder="enter code" class="w-1/2 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white uppercase tracking-widest focus:outline-none focus:border-cyan-400 transition text-center">
+                </div>
+                <span class="text-[8px] text-gray-500 block font-mono">Click the image code above to refresh.</span>
+            </div>
+
             <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-purple-600/20">
                 Authenticate User
             </button>
@@ -124,6 +140,17 @@
                 <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Confirm Security Password</label>
                 <input type="password" id="register-confirm" required placeholder="confirm your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
             </div>
+
+            <!-- Inline CAPTCHA Integration (Sign-Up) -->
+            <div class="bg-white/5 border border-white/5 p-4 rounded-xl space-y-3">
+                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Bot Protection Challenge</label>
+                <div class="flex items-center space-x-3">
+                    <img id="register-captcha-img" src="/captcha" alt="CAPTCHA" class="rounded-xl h-10 border border-white/10 cursor-pointer w-1/2 object-cover" onclick="this.src='/captcha?'+Date.now()" title="Click to Refresh">
+                    <input type="text" name="captcha" required placeholder="enter code" class="w-1/2 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white uppercase tracking-widest focus:outline-none focus:border-purple-400 transition text-center">
+                </div>
+                <span class="text-[8px] text-gray-500 block font-mono">Click the image code above to refresh.</span>
+            </div>
+
             <button type="submit" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-cyan-600/20">
                 Register Account
             </button>
@@ -176,6 +203,9 @@
             formLogin.classList.remove('hidden');
             formRegister.classList.add('hidden');
             regErrorBox.classList.add('hidden'); // Clear matching alerts on switch
+            
+            // Refresh login CAPTCHA code on tab switch
+            document.getElementById('login-captcha-img').src = '/captcha?' + Date.now();
         });
 
         tabRegisterBtn.addEventListener('click', () => {
@@ -185,6 +215,9 @@
             tabLoginBtn.classList.remove('border-cyan-400', 'text-white');
             formRegister.classList.remove('hidden');
             formLogin.classList.add('hidden');
+            
+            // Refresh register CAPTCHA code on tab switch
+            document.getElementById('register-captcha-img').src = '/captcha?' + Date.now();
         });
 
         // Client-side verification during form submission
