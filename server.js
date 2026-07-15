@@ -1,15 +1,42 @@
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
-const { Pool } = require('pg'); // Changed from sqlite3 to pg
+const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Setup PostgreSQL Connection Pool
+// ========================================================================
+// 1. SET EXPRESS CONFIGURATIONS IMMEDIATELY (Before database & routes)
+// ========================================================================
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Session Engine Configuration
+app.use(session({
+    secret: 'vsb_cosmic_security_hashkey',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: false, // Set to true if running over HTTPS
+        maxAge: 1000 * 60 * 60 * 3 
+    }
+}));
+
+// Route global context processor
+app.use((req, res, next) => {
+    res.locals.user = req.session.userId ? { email: req.session.userEmail, role: req.session.userRole } : null;
+    next();
+});
+
+// ========================================================================
+// 2. SETUP DATABASE CONNECTION POOL
+// ========================================================================
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL, // Injected via environment variables
+    connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false // Required for serverless hosting providers like Neon/Supabase
     }
@@ -26,7 +53,7 @@ pool.connect((err, client, release) => {
 });
 
 function verifyDatabaseTables() {
-    // Users Table (Changed INTEGER PRIMARY KEY AUTOINCREMENT to SERIAL PRIMARY KEY)
+    // Users Table
     pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
@@ -72,28 +99,6 @@ function verifyDatabaseTables() {
     });
 }
 
-// Config Modules
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Session Engine Configuration
-app.use(session({
-    secret: 'vsb_cosmic_security_hashkey',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-        secure: false, // Set to true if running over HTTPS
-        maxAge: 1000 * 60 * 60 * 3 
-    }
-}));
-
-// Route global context processor
-app.use((req, res, next) => {
-    res.locals.user = req.session.userId ? { email: req.session.userEmail, role: req.session.userRole } : null;
-    next();
-});
-
 // Admin Route Guards
 function checkAdmin(req, res, next) {
     if (req.session.userId && req.session.userRole === 'admin') {
@@ -103,7 +108,9 @@ function checkAdmin(req, res, next) {
     }
 }
 
-// --- PORTAL ENDPOINTS ---
+// ========================================================================
+// 3. PORTAL ENDPOINTS
+// ========================================================================
 
 // Home Page
 app.get('/', (req, res) => {
