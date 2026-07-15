@@ -1,59 +1,74 @@
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg'); // Changed from sqlite3 to pg
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Setup Database Connections
-const db = new sqlite3.Database('./vsb_galaxy_dept.db', (err) => {
-    if (err) {
-        console.error('Database instantiation failure:', err.message);
-    } else {
-        console.log('Connected to VSB Department SQLite database.');
-        verifyDatabaseTables();
+// Setup PostgreSQL Connection Pool
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL, // Injected via environment variables
+    ssl: {
+        rejectUnauthorized: false // Required for serverless hosting providers like Neon/Supabase
     }
 });
 
+// Test connection and initialize tables
+pool.connect((err, client, release) => {
+    if (err) {
+        return console.error('Error acquiring client', err.stack);
+    }
+    console.log('Successfully connected to PostgreSQL database.');
+    verifyDatabaseTables();
+    release();
+});
+
 function verifyDatabaseTables() {
-    // Users Table
-    db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // Users Table (Changed INTEGER PRIMARY KEY AUTOINCREMENT to SERIAL PRIMARY KEY)
+    pool.query(`CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         role TEXT DEFAULT 'student',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    // Create Initial Admin Account
-    const defaultAdmin = 'admin@vsb.edu';
-    db.get('SELECT * FROM users WHERE email = ?', [defaultAdmin], (err, row) => {
-        if (!row) {
-            const adminHash = bcrypt.hashSync('VSBAdminGalaxy2025', 10);
-            db.run('INSERT INTO users (email, password, role) VALUES (?, ?, ?)', [defaultAdmin, adminHash, 'admin']);
-        }
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`, (err) => {
+        if (err) console.error('Error creating users table:', err.message);
+        
+        // Create Initial Admin Account
+        const defaultAdmin = 'admin@vsb.edu';
+        pool.query('SELECT * FROM users WHERE email = $1', [defaultAdmin], (err, result) => {
+            if (err) return console.error(err.message);
+            if (result.rows.length === 0) {
+                const adminHash = bcrypt.hashSync('VSBAdminGalaxy2025', 10);
+                pool.query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3)', [defaultAdmin, adminHash, 'admin']);
+            }
+        });
     });
 
     // Dynamic Blog / Department Updates Table
-    db.run(`CREATE TABLE IF NOT EXISTS blogs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pool.query(`CREATE TABLE IF NOT EXISTS blogs (
+        id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
         summary TEXT NOT NULL,
         content TEXT NOT NULL,
         category TEXT NOT NULL,
         date TEXT NOT NULL
-    )`);
+    )`, (err) => {
+        if (err) console.error('Error creating blogs table:', err.message);
 
-    // Add VSB Departmental Default Content
-    db.get('SELECT COUNT(*) as count FROM blogs', (err, row) => {
-        if (row && row.count === 0) {
-            db.run(`INSERT INTO blogs (title, summary, content, category, date) VALUES 
-                ('VSB AI & ML Research Lab Setup', 'Our division has established a new high-performance computing interface for deep learning analysis.', 'Detailed lab contents...', 'Lab Updates', 'Oct 29, 2025'),
-                ('Neural Networks Semester Syllabus', 'Curriculum specifications and training patterns for third-year analytics courses.', 'Detailed syllabus documentation...', 'Academic', 'Nov 02, 2025')
-            `);
-        }
+        // Add VSB Departmental Default Content
+        pool.query('SELECT COUNT(*) as count FROM blogs', (err, result) => {
+            if (err) return console.error(err.message);
+            const count = parseInt(result.rows[0].count);
+            if (count === 0) {
+                pool.query(`INSERT INTO blogs (title, summary, content, category, date) VALUES 
+                    ('VSB AI & ML Research Lab Setup', 'Our division has established a new high-performance computing interface for deep learning analysis.', 'Detailed lab contents...', 'Lab Updates', 'Oct 29, 2025'),
+                    ('Neural Networks Semester Syllabus', 'Curriculum specifications and training patterns for third-year analytics courses.', 'Detailed syllabus documentation...', 'Academic', 'Nov 02, 2025')
+                `);
+            }
+        });
     });
 }
 
@@ -92,8 +107,8 @@ function checkAdmin(req, res, next) {
 
 // Home Page
 app.get('/', (req, res) => {
-    db.all('SELECT * FROM blogs ORDER BY id DESC', [], (err, blogs) => {
-        if (err) blogs = [];
+    pool.query('SELECT * FROM blogs ORDER BY id DESC', (err, result) => {
+        const blogs = result ? result.rows : [];
         res.render('index', { blogs });
     });
 });
@@ -112,9 +127,9 @@ app.post('/register', (req, res) => {
     }
 
     const secureHash = bcrypt.hashSync(password, 10);
-    db.run('INSERT INTO users (email, password, role) VALUES (?, ?, ?)', [email, secureHash, 'student'], (err) => {
+    pool.query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3)', [email, secureHash, 'student'], (err) => {
         if (err) {
-            const warning = err.message.includes('UNIQUE') ? 'Email structure already registered.' : 'Registration failed.';
+            const warning = err.message.includes('unique') || err.message.includes('duplicate') ? 'Email structure already registered.' : 'Registration failed.';
             return res.render('login', { error: warning, success: null });
         }
         res.render('login', { error: null, success: 'VSB Student account created. Proceed to authentication.' });
@@ -124,7 +139,8 @@ app.post('/register', (req, res) => {
 // Login Handlers
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
-    db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
+    pool.query('SELECT * FROM users WHERE email = $1', [email], (err, result) => {
+        const user = result && result.rows.length > 0 ? result.rows[0] : null;
         if (err || !user) {
             return res.render('login', { error: 'Invalid authentication credentials.', success: null });
         }
@@ -155,11 +171,11 @@ app.get('/logout', (req, res) => {
 
 // Secure Administrator Control Board
 app.get('/admin', checkAdmin, (req, res) => {
-    db.all('SELECT id, email, role, created_at FROM users WHERE role = ? ORDER BY id DESC', ['student'], (err, students) => {
-        if (err) students = [];
+    pool.query('SELECT id, email, role, created_at FROM users WHERE role = $1 ORDER BY id DESC', ['student'], (err, sResult) => {
+        const students = sResult ? sResult.rows : [];
         
-        db.all('SELECT * FROM blogs ORDER BY id DESC', [], (err, blogs) => {
-            if (err) blogs = [];
+        pool.query('SELECT * FROM blogs ORDER BY id DESC', (err, bResult) => {
+            const blogs = bResult ? bResult.rows : [];
             res.render('admin', { students, blogs, editBlog: null });
         });
     });
@@ -168,14 +184,15 @@ app.get('/admin', checkAdmin, (req, res) => {
 // Pull individual post for inline update rendering
 app.get('/admin/edit/:id', checkAdmin, (req, res) => {
     const blogId = req.params.id;
-    db.all('SELECT id, email, role, created_at FROM users WHERE role = ? ORDER BY id DESC', ['student'], (err, students) => {
-        if (err) students = [];
+    pool.query('SELECT id, email, role, created_at FROM users WHERE role = $1 ORDER BY id DESC', ['student'], (err, sResult) => {
+        const students = sResult ? sResult.rows : [];
         
-        db.all('SELECT * FROM blogs ORDER BY id DESC', [], (err, blogs) => {
-            if (err) blogs = [];
+        pool.query('SELECT * FROM blogs ORDER BY id DESC', (err, bResult) => {
+            const blogs = bResult ? bResult.rows : [];
             
-            db.get('SELECT * FROM blogs WHERE id = ?', [blogId], (err, editBlog) => {
-                res.render('admin', { students, blogs, editBlog: editBlog || null });
+            pool.query('SELECT * FROM blogs WHERE id = $1', [blogId], (err, editResult) => {
+                const editBlog = editResult && editResult.rows.length > 0 ? editResult.rows[0] : null;
+                res.render('admin', { students, blogs, editBlog });
             });
         });
     });
@@ -186,7 +203,7 @@ app.post('/admin/blogs/add', checkAdmin, (req, res) => {
     const { title, summary, content, category } = req.body;
     const dateFormatted = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     
-    db.run('INSERT INTO blogs (title, summary, content, category, date) VALUES (?, ?, ?, ?, ?)', 
+    pool.query('INSERT INTO blogs (title, summary, content, category, date) VALUES ($1, $2, $3, $4, $5)', 
         [title, summary, content, category, dateFormatted], (err) => {
             if (err) console.error(err.message);
             res.redirect('/admin');
@@ -199,7 +216,7 @@ app.post('/admin/blogs/update/:id', checkAdmin, (req, res) => {
     const { title, summary, content, category } = req.body;
     const blogId = req.params.id;
 
-    db.run('UPDATE blogs SET title = ?, summary = ?, content = ?, category = ? WHERE id = ?', 
+    pool.query('UPDATE blogs SET title = $1, summary = $2, content = $3, category = $4 WHERE id = $5', 
         [title, summary, content, category, blogId], (err) => {
             if (err) console.error(err.message);
             res.redirect('/admin');
@@ -210,12 +227,12 @@ app.post('/admin/blogs/update/:id', checkAdmin, (req, res) => {
 // DELETE: Remove updates from system indexes
 app.get('/admin/blogs/delete/:id', checkAdmin, (req, res) => {
     const blogId = req.params.id;
-    db.run('DELETE FROM blogs WHERE id = ?', [blogId], (err) => {
+    pool.query('DELETE FROM blogs WHERE id = $1', [blogId], (err) => {
         if (err) console.error(err.message);
         res.redirect('/admin');
     });
 });
 
 app.listen(PORT, () => {
-    console.log(`VSB Portal is running on http://localhost:${PORT}`);
+    console.log(`VSB Portal is running on port ${PORT}`);
 });
