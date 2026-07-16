@@ -121,7 +121,7 @@
             <!-- VSB Header Details above the login card -->
             <div class="text-center mb-6 max-w-xl mx-auto">
                 <div class="mb-4 flex justify-center">
-                    <img src="/images/vsb-logo.png" alt="V.S.B. College Logo" class="w-20 h-20 sm:w-24 sm:h-28 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
+                    <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-20 h-20 sm:w-24 sm:h-28 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
                 </div>
                 <span class="heading-font text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.4em] uppercase text-cyan-400 block mb-2 font-semibold">V.S.B. Engineering College</span>
                 <h1 class="heading-font text-2xl sm:text-4xl font-extrabold text-white tracking-wider leading-tight uppercase">
@@ -196,15 +196,15 @@
                                 <option value="CSE">CSE</option>
                                 <option value="CSE(AIML)">CSE(AIML)</option>
                                 <option value="CCE">CCE</option>
-                                <option value="BIO MED">Bio Med</option>
-                                <option value="CHEM">Chem</option>
-                                <option value="MECH">Mech</option>
+                                <option value="Bio Med">Bio Med</option>
+                                <option value="Chem">Chem</option>
+                                <option value="Mech">Mech</option>
                                 <option value="ECE">ECE</option>
                                 <option value="EEE">EEE</option>
-                                <option value="CIVIL">Civil</option>
+                                <option value="Civil">Civil</option>
                                 <option value="CSBS">CSBS</option>
                                 <option value="AIDS">AIDS</option>
-                                <option value="BIO TECH">Bio Tech</option>
+                                <option value="Bio Tech">Bio Tech</option>
                                 <option value="IT">IT</option>
                             </select>
                         </div>
@@ -276,10 +276,13 @@
             <div class="flex items-center space-x-6 text-xs font-mono">
                 <% if (user.role === 'admin') { %>
                     <a href="/admin" class="text-yellow-400 hover:text-yellow-300 transition">Admin Console</a>
-                <% } else { %>
-                    <span class="text-purple-300 font-semibold"><%= user.email.split('@')[0] %> (Student)</span>
-                    <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-3 py-1 rounded transition">Sign Out</a>
                 <% } %>
+                <!-- Render Role tag: Admin, Staff, or Student -->
+                <span class="text-purple-300 font-semibold">
+                    <%= user.email.split('@')[0] %> 
+                    <% if (user.role === 'admin') { %>(Admin)<% } else if (user.role === 'staff') { %>(Staff)<% } else { %>(Student)<% } %>
+                </span>
+                <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-3 py-1 rounded transition">Logoff</a>
             </div>
         </nav>
 

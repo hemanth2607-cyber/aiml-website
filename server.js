@@ -28,12 +28,12 @@ app.use(session({
     }
 }));
 
-// Route global context processor (Injected department metadata into global locals)
+// Route global context processor (Injected role metadata into global locals)
 app.use((req, res, next) => {
     res.locals.user = req.session.userId ? { 
         email: req.session.userEmail, 
-        role: req.session.userRole,
-        department: req.session.userDepartment // mapped user department
+        role: req.session.userRole, // 'student', 'staff', 'admin'
+        department: req.session.userDepartment
     } : null;
     next();
 });
@@ -165,7 +165,7 @@ function checkAuth(req, res, next) {
     }
 }
 
-// Academics Protection Guard (Strictly restricts to CSE(AIML) or Admin roles)
+// Academics Protection Guard (Restricts to CSE(AIML) or Admin roles)
 function checkAcademicAccess(req, res, next) {
     if (req.session.userId) {
         if (req.session.userRole === 'admin' || req.session.userDepartment === 'CSE(AIML)') {
@@ -214,7 +214,7 @@ app.get('/events', checkAuth, (req, res) => {
     });
 });
 
-// SUB-PORTAL: Academic Updates Page (Protected by CSE(AIML) Check)
+// SUB-PORTAL: Academic Updates Page
 app.get('/academics', checkAcademicAccess, (req, res) => {
     pool.query('SELECT * FROM academics ORDER BY id DESC', (err, result) => {
         const academics = result ? result.rows : [];
@@ -301,8 +301,8 @@ app.post('/login', (req, res) => {
 
         req.session.userId = user.id;
         req.session.userEmail = user.email;
-        req.session.userRole = user.role;
-        req.session.userDepartment = user.department; // Map department to Session
+        req.session.userRole = user.role; // Stores 'student', 'staff', or 'admin'
+        req.session.userDepartment = user.department; 
 
         if (user.role === 'admin') {
             res.redirect('/admin');
@@ -547,33 +547,68 @@ app.post('/reset-password', (req, res) => {
     });
 });
 
-// Terminate Session
-app.get('/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.redirect('/');
-    });
-});
-
 // Secure Administrator Control Board
 app.get('/admin', checkAdmin, (req, res) => {
     const emailSuccess = req.query.notified === 'true' ? 'Notification email dispatched to all students.' : null;
     const emailError = req.query.notified === 'error' ? 'Failed to dispatch email. Check SMTP settings.' : null;
 
+    // Query students
     pool.query('SELECT id, email, role, year, department, created_at FROM users WHERE role = $1 ORDER BY id DESC', ['student'], (err, sResult) => {
         const students = sResult ? sResult.rows : [];
         
-        pool.query('SELECT * FROM blogs ORDER BY id DESC', (err, bResult) => {
-            const blogs = bResult ? bResult.rows : [];
-            
-            pool.query('SELECT * FROM academics ORDER BY id DESC', (err, aResult) => {
-                const academics = aResult ? aResult.rows : [];
+        // Query staff/teachers (New Query)
+        pool.query('SELECT id, email, role, department, created_at FROM users WHERE role = $1 ORDER BY id DESC', ['staff'], (err, stResult) => {
+            const staff = stResult ? stResult.rows : [];
+
+            pool.query('SELECT * FROM blogs ORDER BY id DESC', (err, bResult) => {
+                const blogs = bResult ? bResult.rows : [];
                 
-                pool.query('SELECT * FROM events ORDER BY id DESC', (err, eResult) => {
-                    const events = eResult ? eResult.rows : [];
-                    res.render('admin', { students, blogs, academics, events, editBlog: null, editAcademic: null, editEvent: null, success: emailSuccess, error: emailError });
+                pool.query('SELECT * FROM academics ORDER BY id DESC', (err, aResult) => {
+                    const academics = aResult ? aResult.rows : [];
+                    
+                    pool.query('SELECT * FROM events ORDER BY id DESC', (err, eResult) => {
+                        const events = eResult ? eResult.rows : [];
+                        res.render('admin', { students, staff, blogs, academics, events, editBlog: null, editAcademic: null, editEvent: null, success: emailSuccess, error: emailError });
+                    });
                 });
             });
         });
+    });
+});
+
+// CREATE STAFF: Securely register a new Staff account (Admin Protected)
+app.post('/admin/staff/add', checkAdmin, (req, res) => {
+    const { password, department } = req.body;
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
+
+    if (!email || !password || !department) {
+        return res.redirect('/admin?notified=error');
+    }
+
+    const secureHash = bcrypt.hashSync(password, 10);
+    // Insert into users with 'staff' role
+    pool.query('INSERT INTO users (email, password, role, year, department) VALUES ($1, $2, $3, $4, $5)', 
+        [email, secureHash, 'staff', 'N/A', department], (err) => {
+            if (err) {
+                console.error('Error creating Staff:', err.message);
+                return res.redirect('/admin?notified=error');
+            }
+            res.redirect('/admin');
+        }
+    );
+});
+
+// DELETE STAFF: Securely remove staff credentials from Database (Admin Protected)
+app.get('/admin/staff/delete/:id', checkAdmin, (req, res) => {
+    const staffId = req.params.id;
+
+    // Guard: Ensure we only delete staff accounts
+    pool.query('DELETE FROM users WHERE id = $1 AND role = $2', [staffId, 'staff'], (err) => {
+        if (err) {
+            console.error('Error deleting staff:', err.message);
+            return res.redirect('/admin?notified=error');
+        }
+        res.redirect('/admin');
     });
 });
 
@@ -605,7 +640,7 @@ app.post('/admin/notify', checkAdmin, (req, res) => {
 
         const mailOptions = {
             from: `"VSB AI & ML Department" <${process.env.SMTP_USER}>`,
-            bcc: studentEmails.join(','), // Send in BCC field to secure student privacy
+            bcc: studentEmails.join(','), 
             subject: subject,
             text: message,
             html: `<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #0d081c; color: #f3f4f6; border-radius: 12px;">
