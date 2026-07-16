@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VSB Engineering College | Department of AI &amp; ML</title>
+    <title>V.S.B. Engineering College | Department of AI &amp; ML</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -16,11 +16,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #03000a;
             color: #f3f4f6;
-            <% if (!user) { %>
-            overflow: hidden !important; /* Lock visitor screen completely if not logged in */
-            <% } else { %>
             overflow-x: hidden;
-            <% } %>
         }
 
         .heading-font {
@@ -53,44 +49,33 @@
             will-change: transform;
         }
 
-        /* Entrance Overlay Section (Holding the Cybernetic Brain & Gears Canvas) */
-        #entrance-container {
+        .custom-cursor-trail {
+            width: 6px;
+            height: 6px;
+            background: #2563eb;
+            border-radius: 50%;
             position: fixed;
-            inset: 0;
-            background-color: #060214; 
-            z-index: 50;
             pointer-events: none;
-            will-change: opacity, filter;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            opacity: 0.6;
+            transition: transform 0.15s ease-out;
         }
 
-        #neural-canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 55;
-            pointer-events: none;
+        .galaxy-card {
+            background: rgba(13, 8, 28, 0.8);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Welcome Reveal Title Screen */
-        #splash-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 45;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            transform-origin: center center;
-            will-change: opacity, transform;
+        .galaxy-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
         }
 
-        .neon-glow-cyan {
-            text-shadow: 0 0 15px rgba(6, 182, 212, 0.7), 0 0 30px rgba(6, 182, 212, 0.3);
-        }
-
-        /* Interconnected Dashboard Portals (Nodes) */
+        /* Glassmorphic Portal Nodes for Dashboard */
         .portal-node {
             background: rgba(13, 8, 28, 0.85);
             border: 1px solid rgba(6, 182, 212, 0.25);
@@ -102,22 +87,13 @@
 
         .portal-node:hover {
             border-color: #a855f7;
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.35);
-            transform: scale(1.03) translateY(-4px);
-        }
-
-        #dashboard-canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            pointer-events: none;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+            transform: translateY(-4px);
         }
 
         @media (max-width: 640px) {
             /* Disable custom cursor on mobile touch screens to prevent lag */
-            .custom-cursor {
+            .custom-cursor, .custom-cursor-trail {
                 display: none !important;
             }
             * {
@@ -126,41 +102,131 @@
         }
     </style>
 </head>
-<body class="bg-[#03000a]">
+<body class="bg-[#03000a]" data-logged-in="<%= !!user %>">
 
     <!-- Interactive Custom Cursor -->
     <div id="cursor-core" class="custom-cursor"></div>
+    <div id="cursor-trail" class="custom-cursor-trail"></div>
 
     <!-- Cosmic Starfield Layer -->
     <canvas id="starfield"></canvas>
 
     <% if (!user) { %>
         <!-- ========================================================================
-             1. PUBLIC VISITOR SCREEN (Locked: Brain, Gears, and Login link)
+             1. PUBLIC VISITOR SCREEN (Locked: Direct Login Landing Page)
              ======================================================================== -->
         
-        <!-- Opaque Neural/Gear transition overlay -->
-        <div id="entrance-container">
-            <canvas id="neural-canvas"></canvas>
-        </div>
-
-        <div id="splash-screen" class="px-4">
-            <div class="text-center max-w-4xl mx-auto flex flex-col items-center justify-center">
-                <!-- VSB Official Logo -->
-                <div class="mb-4 sm:mb-6">
-                    <img src="/images/vsb-logo.png" alt="V.S.B. College Logo" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
+        <div class="relative z-30 min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6">
+            
+            <!-- VSB Header Details above the login card -->
+            <div class="text-center mb-8 max-w-xl mx-auto">
+                <div class="mb-4 flex justify-center">
+                    <img src="/images/vsb-logo.png" alt="V.S.B. College Logo" class="w-20 h-20 sm:w-24 sm:h-28 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
                 </div>
                 <span class="heading-font text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.4em] uppercase text-cyan-400 block mb-2 font-semibold">V.S.B. Engineering College</span>
-                <h1 class="heading-font text-xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-wider leading-tight uppercase mb-8">
-                    Artificial Intelligence <br>&amp; <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 neon-glow-cyan">Machine Learning</span>
+                <h1 class="heading-font text-2xl sm:text-4xl font-extrabold text-white tracking-wider leading-tight uppercase">
+                    Artificial Intelligence &amp; <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Machine Learning</span>
                 </h1>
                 
-                <!-- Main Locked Portal Sign-in Cable Terminal Button -->
-                <a href="/login" class="pointer-events-auto heading-font text-xs sm:text-sm tracking-widest text-cyan-400 bg-cyan-950/20 hover:bg-cyan-500/20 border border-cyan-500/40 hover:border-cyan-400 px-8 py-3 rounded-full transition shadow-lg shadow-cyan-500/10 hover:shadow-cyan-400/20 relative z-[60]">
-                    [ ACCESS PORTAL TERMINAL ]
+                <!-- Accreditation Subtitle (Styled in Times New Roman) -->
+                <p class="mt-3 text-xs sm:text-sm font-normal text-gray-400 leading-relaxed tracking-wide" style="font-family: 'Times New Roman', Times, serif;">
+                    Affiliated to Anna University, Chennai &amp; Approved by AICTE, New Delhi
+                </p>
+            </div>
+
+            <!-- Login Card Container -->
+            <div class="w-full max-w-md galaxy-card p-6 sm:p-8 rounded-3xl">
+                <!-- Tab Toggles -->
+                <div class="flex border-b border-white/5 mb-6 text-xs sm:text-sm">
+                    <button id="tab-login-btn" class="w-1/2 pb-3 border-b-2 border-cyan-400 text-white font-semibold focus:outline-none">Sign In</button>
+                    <button id="tab-register-btn" class="w-1/2 pb-3 border-b-2 border-transparent text-gray-400 font-semibold focus:outline-none">Sign Up</button>
+                </div>
+
+                <!-- Client-Side Mismatch Alert Box -->
+                <div id="register-error-box" class="hidden bg-red-950/50 border border-red-500/30 text-red-300 text-xs p-3 rounded-lg mb-6">
+                    Passwords do not match. Please verify.
+                </div>
+
+                <!-- Sign In Form -->
+                <form id="form-login" action="/login" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Email Address</label>
+                        <input type="email" name="email" required placeholder="enter your email" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Security Key (Password)</label>
+                        <div class="relative">
+                            <input type="password" id="signin-password" name="password" required placeholder="enter your password" class="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+                            <button type="button" onclick="togglePasswordVisibility('signin-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none">
+                                <!-- Eye Open SVG -->
+                                <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-3-3 3 3 0 013 3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                <!-- Eye Closed SVG -->
+                                <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 113.382 3.382m0.792-3.382a3 3 0 11-1.104-1.104m3.52 3.52l3.52 3.52M3 3l18 18"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Forgot Password Link -->
+                        <div class="mt-2 text-right">
+                            <a href="/forgot-password" class="text-[10px] text-cyan-400 hover:text-cyan-300 font-mono transition">Forgot Password?</a>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-purple-600/20">
+                        Authenticate User
+                    </button>
+                </form>
+
+                <!-- Sign Up Form with Password Confirmation -->
+                <form id="form-register" action="/register" method="POST" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">College Email Address</label>
+                        <input type="email" name="email" required placeholder="enter your email" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Establish Security Password</label>
+                        <div class="relative">
+                            <input type="password" id="register-password" name="password" required placeholder="enter your password" class="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
+                            <button type="button" onclick="togglePasswordVisibility('register-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none">
+                                <!-- Eye Open SVG -->
+                                <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-3-3 3 3 0 013 3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                <!-- Eye Closed SVG -->
+                                <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 113.382 3.382m0.792-3.382a3 3 0 11-1.104-1.104m3.52 3.52l3.52 3.52M3 3l18 18"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Confirm Security Password</label>
+                        <div class="relative">
+                            <input type="password" id="register-confirm" required placeholder="confirm your password" class="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-400 transition">
+                            <button type="button" onclick="togglePasswordVisibility('register-confirm', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none">
+                                <!-- Eye Open SVG -->
+                                <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-3-3 3 3 0 013 3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                <!-- Eye Closed SVG -->
+                                <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 113.382 3.382m0.792-3.382a3 3 0 11-1.104-1.104m3.52 3.52l3.52 3.52M3 3l18 18"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-cyan-600/20">
+                        Register Account
+                    </button>
+                </form>
+
+                <!-- Google SSO Separator -->
+                <div class="relative flex py-6 items-center">
+                    <div class="flex-grow border-t border-white/10"></div>
+                    <span class="flex-shrink mx-4 text-[10px] text-gray-500 uppercase tracking-widest font-mono">OR</span>
+                    <div class="flex-grow border-t border-white/10"></div>
+                </div>
+
+                <!-- Google OAuth Redirect Button -->
+                <a href="/auth/google" class="w-full py-3 bg-white hover:bg-gray-100 text-gray-900 rounded-xl text-xs font-semibold flex items-center justify-center space-x-3 transition shadow-lg shadow-white/5">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.18 1-.76 1.85-1.61 2.42v2.01h2.59c1.51-1.39 2.38-3.43 2.38-5.83z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.59-2.01c-1 .67-2.28 1.07-3.69 1.07-2.83 0-5.23-1.91-6.08-4.49H3.1v2.13C4.92 20.67 8.24 23 12 23z" fill="#34A853"/>
+                        <path d="M5.92 14.91C5.7 14.25 5.58 13.55 5.58 12.8s.12-1.45.34-2.11V8.56H3.1C2.4 10 2 11.45 2 12.8s.4 2.8 1.1 4.24l2.82-2.13z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 8.24 1 4.92 3.33 3.1 6.67l2.82 2.13C6.77 7.29 9.17 5.38 12 5.38z" fill="#EA4335"/>
+                    </svg>
+                    <span class="text-gray-900">Continue with Google</span>
                 </a>
-                
-                <p class="text-[9px] text-gray-500 mt-6 tracking-widest font-mono uppercase">[ Login required to enter core indexes ]</p>
             </div>
         </div>
     <% } else { %>
@@ -183,6 +249,9 @@
             </div>
             
             <div class="flex items-center space-x-6 text-xs font-mono">
+                <% if (user.role === 'admin') { %>
+                    <a href="/admin" class="text-yellow-400 hover:text-yellow-300 transition">Admin Console</a>
+                <% } %>
                 <span class="text-purple-300 font-semibold"><%= user.email.split('@')[0] %> (Student)</span>
                 <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-3 py-1 rounded transition">Logoff</a>
             </div>
@@ -190,9 +259,6 @@
 
         <!-- Interconnected portal dashboard -->
         <div class="relative w-screen min-h-screen flex items-center justify-center pt-24 pb-12 overflow-hidden">
-            <!-- Neural Wiring Canvas Layer -->
-            <canvas id="dashboard-canvas"></canvas>
-
             <div class="relative z-30 max-w-5xl mx-auto px-6 w-full">
                 <div class="text-center mb-16">
                     <span class="text-xs uppercase font-mono tracking-widest text-cyan-400">[ SECURED INDEX CORE ]</span>
@@ -204,7 +270,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
                     
                     <!-- Node 1: Events -->
-                    <a id="node-events" href="/events" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
+                    <a href="/events" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
                         <div>
                             <span class="text-[9px] font-mono tracking-widest text-cyan-400 block mb-2">[ SYSTEM 01 ]</span>
                             <h2 class="heading-font text-lg sm:text-xl font-bold text-white mb-3">EVENTS PORTAL</h2>
@@ -214,7 +280,7 @@
                     </a>
 
                     <!-- Node 2: Academics -->
-                    <a id="node-academics" href="/academics" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
+                    <a href="/academics" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
                         <div>
                             <span class="text-[9px] font-mono tracking-widest text-purple-400 block mb-2">[ SYSTEM 02 ]</span>
                             <h2 class="heading-font text-lg sm:text-xl font-bold text-white mb-3">ACADEMIC UPDATES</h2>
@@ -224,7 +290,7 @@
                     </a>
 
                     <!-- Node 3: Announcements -->
-                    <a id="node-announcements" href="/announcements" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
+                    <a href="/announcements" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
                         <div>
                             <span class="text-[9px] font-mono tracking-widest text-pink-400 block mb-2">[ SYSTEM 03 ]</span>
                             <h2 class="heading-font text-lg sm:text-xl font-bold text-white mb-3">ANNOUNCEMENTS</h2>
@@ -362,260 +428,71 @@
         resizeStars();
         drawStarsFrame();
 
-
         /* 
            ========================================================================
-           LOCKED PUBLIC ENTRANCE GATEWAY (BRAIN, SPINNING GEARS & AXON TERMINALS)
+           CLIENT-SIDE FORM CONTROLLER (Only runs if user is NOT logged in)
            ========================================================================
         */
-        <% if (!user) { %>
-            const nCanvas = document.getElementById('neural-canvas');
-            const nCtx = nCanvas.getContext('2d');
-            let brainX = 0, brainY = 0, brainSize = 100;
-            let gears = [];
-            let axonPathways = [];
+        const isLoggedIn = document.body.getAttribute('data-logged-in') === 'true';
 
-            function resizeNeuralCanvas() {
-                nCanvas.width = window.innerWidth;
-                nCanvas.height = window.innerHeight;
-                initializeNeuralVisuals();
-            }
+        if (!isLoggedIn) {
+            const tabLoginBtn = document.getElementById('tab-login-btn');
+            const tabRegisterBtn = document.getElementById('tab-register-btn');
+            const formLogin = document.getElementById('form-login');
+            const formRegister = document.getElementById('form-register');
+            
+            // Password verification variables
+            const regPassword = document.getElementById('register-password');
+            const regConfirm = document.getElementById('register-confirm');
+            const regErrorBox = document.getElementById('register-error-box');
 
-            // Draw mechanical gears
-            function drawGear(ctx, x, y, radius, teeth, angle, color) {
-                ctx.beginPath();
-                const innerRadius = radius * 0.75;
-                const outerRadius = radius * 1.15;
+            // General password visibility toggle helper function
+            function togglePasswordVisibility(inputId, button) {
+                const input = document.getElementById(inputId);
+                const openIcon = button.querySelector('.eye-open');
+                const closedIcon = button.querySelector('.eye-closed');
                 
-                for (let i = 0; i < teeth; i++) {
-                    const step = (Math.PI * 2) / teeth;
-                    const theta = i * step + angle;
-                    
-                    ctx.lineTo(x + Math.cos(theta) * innerRadius, y + Math.sin(theta) * innerRadius);
-                    ctx.lineTo(x + Math.cos(theta + step * 0.3) * outerRadius, y + Math.sin(theta + step * 0.3) * outerRadius);
-                    ctx.lineTo(x + Math.cos(theta + step * 0.7) * outerRadius, y + Math.sin(theta + step * 0.7) * outerRadius);
-                    ctx.lineTo(x + Math.cos(theta + step) * innerRadius, y + Math.sin(theta + step) * innerRadius);
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    openIcon.classList.add('hidden');
+                    closedIcon.classList.remove('hidden');
+                } else {
+                    input.type = 'password';
+                    openIcon.classList.remove('hidden');
+                    closedIcon.classList.add('hidden');
                 }
-                
-                ctx.closePath();
-                ctx.fillStyle = `rgba(${color}, 0.1)`;
-                ctx.fill();
-                ctx.strokeStyle = `rgba(${color}, 0.5)`;
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-                
-                // Draw central shaft hole
-                ctx.beginPath();
-                ctx.arc(x, y, radius * 0.25, 0, Math.PI * 2);
-                ctx.fillStyle = '#060214';
-                ctx.fill();
-                ctx.stroke();
             }
 
-            // Draw stylized biological brain
-            function drawBrain(ctx, x, y, size) {
-                // Left Lobe
-                ctx.beginPath();
-                ctx.ellipse(x - size * 0.35, y, size * 0.5, size * 0.65, 0, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(6, 182, 212, 0.05)';
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
-                ctx.lineWidth = 2.5;
-                ctx.stroke();
+            tabLoginBtn.addEventListener('click', () => {
+                tabLoginBtn.classList.add('border-cyan-400', 'text-white');
+                tabLoginBtn.classList.remove('border-transparent', 'text-gray-400');
+                tabRegisterBtn.classList.add('border-transparent', 'text-gray-400');
+                tabRegisterBtn.classList.remove('border-cyan-400', 'text-white');
+                formLogin.classList.remove('hidden');
+                formRegister.classList.add('hidden');
+                regErrorBox.classList.add('hidden'); // Clear matching alerts on switch
+            });
 
-                // Right Lobe
-                ctx.beginPath();
-                ctx.ellipse(x + size * 0.35, y, size * 0.5, size * 0.65, 0, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(168, 85, 247, 0.05)';
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(168, 85, 247, 0.3)';
-                ctx.lineWidth = 2.5;
-                ctx.stroke();
+            tabRegisterBtn.addEventListener('click', () => {
+                tabRegisterBtn.classList.add('border-cyan-400', 'text-white');
+                tabRegisterBtn.classList.remove('border-transparent', 'text-gray-400');
+                tabLoginBtn.classList.add('border-transparent', 'text-gray-400');
+                tabLoginBtn.classList.remove('border-cyan-400', 'text-white');
+                formRegister.classList.remove('hidden');
+                formLogin.classList.add('hidden');
+            });
 
-                // Brain internal sulci (wrinkles)
-                ctx.beginPath();
-                ctx.moveTo(x - size * 0.3, y - size * 0.3);
-                ctx.bezierCurveTo(x - size * 0.5, y - size * 0.1, x - size * 0.1, y + size * 0.2, x - size * 0.2, y + size * 0.4);
-                ctx.moveTo(x + size * 0.3, y - size * 0.3);
-                ctx.bezierCurveTo(x + size * 0.5, y - size * 0.1, x + size * 0.1, y + size * 0.2, x + size * 0.2, y + size * 0.4);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-            }
-
-            function initializeNeuralVisuals() {
-                const w = nCanvas.width;
-                const h = nCanvas.height;
-
-                brainX = w * 0.5;
-                brainY = h * 0.5;
-                brainSize = w < 640 ? 65 : 110;
-
-                // Setup 4 spinning gears around the central brain
-                gears = [
-                    { x: w * 0.25, y: h * 0.35, r: w < 640 ? 30 : 50, teeth: 10, speed: 0.015, angle: 0, color: '6, 182, 212' },
-                    { x: w * 0.75, y: h * 0.35, r: w < 640 ? 35 : 55, teeth: 12, speed: -0.012, angle: 0, color: '168, 85, 247' },
-                    { x: w * 0.20, y: h * 0.65, r: w < 640 ? 40 : 60, teeth: 14, speed: -0.01, angle: 0, color: '168, 85, 247' },
-                    { x: w * 0.70, y: h * 0.70, r: w < 640 ? 30 : 45, teeth: 8, speed: 0.02, angle: 0, color: '6, 182, 212' }
-                ];
-
-                axonPathways = [];
-                // Connect gears to the brain with nerve-wires
-                gears.forEach(g => {
-                    axonPathways.push({ x1: brainX, y1: brainY, x2: g.x, y2: g.y, color: g.color, pulses: [] });
-                });
-            }
-
-            window.addEventListener('resize', resizeNeuralCanvas);
-            resizeStars(); // Run alongside starfield
-            resizeNeuralCanvas();
-
-            function drawEntranceLoop() {
-                nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
-
-                // 1. Draw central brain
-                drawBrain(nCtx, brainX, brainY, brainSize);
-
-                // 2. Draw nerve pathways and moving electrical charges
-                axonPathways.forEach(path => {
-                    nCtx.beginPath();
-                    nCtx.moveTo(path.x1, path.y1);
-                    nCtx.lineTo(path.x2, path.y2);
-                    nCtx.strokeStyle = `rgba(${path.color}, 0.15)`;
-                    nCtx.lineWidth = 1.5;
-                    nCtx.stroke();
-
-                    // Periodically spawn electrical pulses down the axons
-                    if (Math.random() > 0.98) {
-                        path.pulses.push({ progress: 0, speed: 0.01 + Math.random() * 0.015 });
-                    }
-
-                    // Render active electrical pulses
-                    for (let i = path.pulses.length - 1; i >= 0; i--) {
-                        const p = path.pulses[i];
-                        p.progress += p.speed;
-
-                        const px = path.x1 + (path.x2 - path.x1) * p.progress;
-                        const py = path.y1 + (path.y2 - path.y1) * p.progress;
-
-                        nCtx.beginPath();
-                        nCtx.arc(px, py, 3.5, 0, Math.PI * 2);
-                        nCtx.fillStyle = '#ffffff';
-                        nCtx.shadowColor = `rgb(${path.color})`;
-                        nCtx.shadowBlur = 8;
-                        nCtx.fill();
-                        nCtx.shadowBlur = 0; // reset
-
-                        if (p.progress >= 1) {
-                            path.pulses.splice(i, 1);
-                        }
-                    }
-                });
-
-                // 3. Draw and rotate gears
-                gears.forEach(g => {
-                    g.angle += g.speed;
-                    drawGear(nCtx, g.x, g.y, g.r, g.teeth, g.angle, g.color);
-                });
-
-                requestAnimationFrame(drawEntranceLoop);
-            }
-            requestAnimationFrame(drawEntranceLoop);
-        <% } %>
-
-        /* 
-           ========================================================================
-           PRIVATE CONNECTED NEURAL PORTALS ENGINE (POST-LOGIN DASHBOARD)
-           ========================================================================
-        */
-        <% if (user) { %>
-            const dCanvas = document.getElementById('dashboard-canvas');
-            const dCtx = dCanvas.getContext('2d');
-            let connections = [];
-
-            function resizeDashboardCanvas() {
-                dCanvas.width = window.innerWidth;
-                dCanvas.height = window.innerHeight;
-                initializePortalConnections();
-            }
-
-            function initializePortalConnections() {
-                connections = [];
-                const elEvents = document.getElementById('node-events');
-                const elAcademics = document.getElementById('node-academics');
-                const elAnnouncements = document.getElementById('node-announcements');
-
-                if (!elEvents || !elAcademics || !elAnnouncements) return;
-
-                // Grab center coords of each portal card node
-                const getCenter = (el) => {
-                    const r = el.getBoundingClientRect();
-                    return {
-                        x: r.left + r.width / 2 + window.scrollX,
-                        y: r.top + r.height / 2 + window.scrollY
-                    };
-                };
-
-                const pts = [
-                    { name: 'events', pt: getCenter(elEvents), color: '6, 182, 212' },
-                    { name: 'academics', pt: getCenter(elAcademics), color: '168, 85, 247' },
-                    { name: 'announcements', pt: getCenter(elAnnouncements), color: '244, 63, 94' }
-                ];
-
-                // Form triangular synapses
-                connections.push({ from: pts[0], to: pts[1], pulses: [] });
-                connections.push({ from: pts[1], to: pts[2], pulses: [] });
-                connections.push({ from: pts[2], to: pts[0], pulses: [] });
-            }
-
-            window.addEventListener('resize', resizeDashboardCanvas);
-            resizeStars(); // Run alongside background stars
-            setTimeout(resizeDashboardCanvas, 300); // Slight delay to ensure DOM coordinates settle
-
-            function drawDashboardConnections() {
-                dCtx.clearRect(0, 0, dCanvas.width, dCanvas.height);
-
-                connections.forEach(conn => {
-                    dCtx.beginPath();
-                    dCtx.moveTo(conn.from.pt.x, conn.from.pt.y);
-                    dCtx.lineTo(conn.to.pt.x, conn.to.pt.y);
-                    dCtx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-                    dCtx.lineWidth = 2.0;
-                    dCtx.stroke();
-
-                    // Spawn nerve-pulses
-                    if (Math.random() > 0.98) {
-                        conn.pulses.push({ progress: 0, speed: 0.008 + Math.random() * 0.01 });
-                    }
-
-                    // Render pulses
-                    for (let i = conn.pulses.length - 1; i >= 0; i--) {
-                        const p = conn.pulses[i];
-                        p.progress += p.speed;
-
-                        const px = conn.from.pt.x + (conn.to.pt.x - conn.from.pt.x) * p.progress;
-                        const py = conn.from.pt.y + (conn.to.pt.y - conn.from.pt.y) * p.progress;
-
-                        dCtx.beginPath();
-                        dCtx.arc(px, py, 4.0, 0, Math.PI * 2);
-                        
-                        // Active node matching color
-                        dCtx.fillStyle = `rgb(${conn.from.color})`;
-                        dCtx.shadowColor = `rgb(${conn.from.color})`;
-                        dCtx.shadowBlur = 10;
-                        dCtx.fill();
-                        dCtx.shadowBlur = 0; // reset
-
-                        if (p.progress >= 1) {
-                            conn.pulses.splice(i, 1);
-                        }
-                    }
-                });
-
-                requestAnimationFrame(drawDashboardConnections);
-            }
-            requestAnimationFrame(drawDashboardConnections);
-        <% } %>
+            // Client-side verification during form submission
+            formRegister.addEventListener('submit', (e) => {
+                if (regPassword.value !== regConfirm.value) {
+                    e.preventDefault(); // Stop form submission
+                    regErrorBox.classList.remove('hidden'); // Display alert box
+                    regConfirm.focus();
+                } else {
+                    regErrorBox.classList.add('hidden'); // Hide alert box
+                }
+            });
+        }
     </script>
 </body>
 </html>
