@@ -276,9 +276,10 @@
             <div class="flex items-center space-x-6 text-xs font-mono">
                 <% if (user.role === 'admin') { %>
                     <a href="/admin" class="text-yellow-400 hover:text-yellow-300 transition">Admin Console</a>
+                <% } else { %>
+                    <span class="text-purple-300 font-semibold"><%= user.email.split('@')[0] %> (Student)</span>
+                    <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-3 py-1 rounded transition">Sign Out</a>
                 <% } %>
-                <span class="text-purple-300 font-semibold"><%= user.email.split('@')[0] %> (Student)</span>
-                <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-3 py-1 rounded transition">Logoff</a>
             </div>
         </nav>
 
