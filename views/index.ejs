@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V.S.B. Engineering College | Department of AI &amp; ML</title>
+    <title>VSB Engineering College | Department of AI &amp; ML</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -414,64 +414,155 @@
 
         /* 
            ========================================================================
-           NEURAL NETWORK DISSOCIATION ENGINE (CANVAS)
+           BIOLOGICAL NEURAL NETWORK DISSOCIATION ENGINE (CANVAS)
            ========================================================================
         */
         const nCanvas = document.getElementById('neural-canvas');
         const nCtx = nCanvas.getContext('2d');
-        let neuralNodes = [];
-        let neuralLines = [];
+        let biologicalNeurons = [];
+        let electricalSynapses = [];
+        let snappingSparks = []; // Spark array for snapping effects
 
         function resizeNeuralCanvas() {
             nCanvas.width = window.innerWidth;
             nCanvas.height = window.innerHeight;
-            initializeNeuralNetwork();
+            initializeBiologicalNetwork();
         }
 
-        function initializeNeuralNetwork() {
-            neuralNodes = [];
-            neuralLines = [];
+        // Recursive dendrite branching generator (makes realistic organic neurons)
+        function generateDendriteTree(startX, startY, angle, length, depth, branchSegments) {
+            if (depth === 0) return;
+
+            const endX = startX + Math.cos(angle) * length;
+            const endY = startY + Math.sin(angle) * length;
+
+            branchSegments.push({
+                x1: startX,
+                y1: startY,
+                x2: endX,
+                y2: endY,
+                depth: depth
+            });
+
+            // Branch out recursively with organic noise
+            const branches = 2 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < branches; i++) {
+                const newAngle = angle + (Math.random() - 0.5) * 1.1; // branching angles
+                const newLength = length * (0.55 + Math.random() * 0.25);
+                generateDendriteTree(endX, endY, newAngle, newLength, depth - 1, branchSegments);
+            }
+        }
+
+        function initializeBiologicalNetwork() {
+            biologicalNeurons = [];
+            electricalSynapses = [];
+            snappingSparks = [];
 
             const w = nCanvas.width;
             const h = nCanvas.height;
 
-            // Structure a 4-layer feedforward neural network (3-4-4-2)
-            const layers = [3, 4, 4, 2];
-            const nodeRadius = window.innerWidth < 640 ? 5 : 8;
+            // Define 5 major biological neuron centers
+            const neuronConfigs = [
+                { x: w * 0.20, y: h * 0.30, size: 24, trunkLength: 70, depth: 3 }, // Input Left
+                { x: w * 0.25, y: h * 0.70, size: 28, trunkLength: 80, depth: 3 }, // Input Bottom Left
+                { x: w * 0.50, y: h * 0.50, size: 34, trunkLength: 95, depth: 4 }, // Central Processing Soma (Major)
+                { x: w * 0.75, y: h * 0.25, size: 26, trunkLength: 75, depth: 3 }, // Output Top Right
+                { x: w * 0.80, y: h * 0.65, size: 28, trunkLength: 80, depth: 3 }  // Output Bottom Right
+            ];
 
-            // Generate Nodes in Layer Structures (relative coordinates)
-            layers.forEach((nodeCount, layerIdx) => {
-                const xPos = w * (0.2 + (layerIdx * 0.2)); // Space layers horizontally (20%, 40%, 60%, 80%)
-                
-                for (let i = 0; i < nodeCount; i++) {
-                    const yPos = h * (0.2 + (i * (0.6 / (nodeCount - 1 || 1)))); // Space nodes vertically
-                    
-                    neuralNodes.push({
-                        layer: layerIdx,
-                        idx: i,
-                        startX: xPos,
-                        startY: yPos,
-                        currentX: xPos,
-                        currentY: yPos,
-                        radius: nodeRadius,
-                        // Scatter directions when breaking down (random vectors)
-                        driftX: (Math.random() - 0.5) * w * 1.5,
-                        driftY: (Math.random() - 0.5) * h * 1.5,
-                        glowColor: layerIdx % 2 === 0 ? '6, 182, 212' : '168, 85, 247' // Cyan/Purple alternating layers
-                    });
+            neuronConfigs.forEach((config, idx) => {
+                const branchSegments = [];
+                // Generate 6 organic trunks per neuron outward at evenly spaced angles
+                const trunks = 6;
+                for (let i = 0; i < trunks; i++) {
+                    const baseAngle = (i / trunks) * Math.PI * 2;
+                    generateDendriteTree(config.x, config.y, baseAngle, config.trunkLength, config.depth, branchSegments);
                 }
+
+                biologicalNeurons.push({
+                    id: idx,
+                    x: config.x,
+                    y: config.y,
+                    startX: config.x,
+                    startY: config.y,
+                    size: config.size,
+                    branches: branchSegments,
+                    // Kinetic vectors for breaking dispersal
+                    driftX: (Math.random() - 0.5) * w * 1.6,
+                    driftY: (Math.random() - 0.5) * h * 1.6,
+                    glowColor: idx % 2 === 0 ? '6, 182, 212' : '168, 85, 247', // Alternate Cyan & Purple
+                    pulses: [] // active electrical signals traversing the branches
+                });
             });
 
-            // Map Connections (axon pathways) between adjacent layers
-            for (let i = 0; i < neuralNodes.length; i++) {
-                const nodeA = neuralNodes[i];
-                for (let j = i + 1; j < neuralNodes.length; j++) {
-                    const nodeB = neuralNodes[j];
-                    if (nodeB.layer === nodeA.layer + 1) {
-                        neuralLines.push({ from: nodeA, to: nodeB });
+            // Connect nearest neighboring neurons to form a structured functional network
+            for (let i = 0; i < biologicalNeurons.length; i++) {
+                const nA = biologicalNeurons[i];
+                for (let j = i + 1; j < biologicalNeurons.length; j++) {
+                    const nB = biologicalNeurons[j];
+                    const dist = Math.hypot(nA.x - nB.x, nA.y - nB.y);
+                    // If close enough, bridge them with an electrical axon pathway
+                    if (dist < w * 0.45) {
+                        electricalSynapses.push({ from: nA, to: nB, originalDist: dist });
                     }
                 }
             }
+        }
+
+        // Draw organic fluctuating somatic membranes
+        function drawOrganicSoma(ctx, x, y, radius, opacity, glowColor) {
+            ctx.beginPath();
+            const points = 16;
+            for (let i = 0; i < points; i++) {
+                const angle = (i / points) * Math.PI * 2;
+                // Add fluid somatic membrane ripples using trig frequencies
+                const ripple = radius * (0.85 + Math.sin(angle * 4 + Date.now() * 0.004) * 0.12);
+                const px = x + Math.cos(angle) * ripple;
+                const py = y + Math.sin(angle) * ripple;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.95})`;
+            ctx.fill();
+
+            // Soma glowing aura
+            const somaGlow = ctx.createRadialGradient(x, y, 0, x, y, radius * 3.0);
+            somaGlow.addColorStop(0, `rgba(${glowColor}, ${opacity * 0.8})`);
+            somaGlow.addColorStop(1, `rgba(${glowColor}, 0)`);
+            ctx.fillStyle = somaGlow;
+            ctx.fill();
+        }
+
+        // Mathematical fractal lightning generator for electrical snapping
+        function drawElectricalArc(ctx, x1, y1, x2, y2, opacity, color) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            let cx = x1;
+            let cy = y1;
+            const segments = 10;
+            
+            for (let i = 1; i <= segments; i++) {
+                const tx = x1 + (x2 - x1) * (i / segments);
+                const ty = y1 + (y2 - y1) * (i / segments);
+                
+                if (i < segments) {
+                    // Inject jagged electrical offsets
+                    cx = tx + (Math.random() - 0.5) * 25;
+                    cy = ty + (Math.random() - 0.5) * 25;
+                } else {
+                    cx = tx;
+                    cy = ty;
+                }
+                ctx.lineTo(cx, cy);
+            }
+            
+            ctx.strokeStyle = `rgba(${color}, ${opacity * 0.95})`;
+            ctx.lineWidth = 2.0;
+            ctx.shadowColor = `rgb(${color})`;
+            ctx.shadowBlur = 10; // high-intensity spark shadow
+            ctx.stroke();
+            ctx.shadowBlur = 0; // reset instantly to prevent downstream lag
         }
 
         window.addEventListener('resize', resizeNeuralCanvas);
@@ -487,40 +578,109 @@
             const breakDistance = viewportHeight * 1.1; 
             const breakProgress = Math.min(Math.max(interpolatedScrollY / breakDistance, 0), 1);
             
-            // Render Neural Network state
+            // Clear rendering space
             nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
             
-            // Calculate and Draw Lines (Axons)
-            const lineOpacity = Math.max(1 - breakProgress * 2.0, 0); // Lines snap/fade early
-            neuralLines.forEach(line => {
-                nCtx.beginPath();
-                nCtx.moveTo(line.from.currentX, line.from.startY + (line.from.driftY * breakProgress));
-                nCtx.lineTo(line.to.currentX, line.to.startY + (line.to.driftY * breakProgress));
-                nCtx.strokeStyle = `rgba(139, 92, 246, ${lineOpacity * 0.15})`;
-                nCtx.lineWidth = 1;
-                nCtx.stroke();
+            // Render Active Biological Neurons
+            biologicalNeurons.forEach(n => {
+                // Calculate drift kinematic offsets
+                n.x = n.startX + (n.driftX * breakProgress);
+                n.y = n.startY + (n.driftY * breakProgress);
+
+                // Draw organic Somas
+                drawOrganicSoma(nCtx, n.x, n.y, n.size, 1 - breakProgress, n.glowColor);
+
+                // Update and draw recursive dendrite arbor trees
+                n.branches.forEach(b => {
+                    nCtx.beginPath();
+                    // Shift entire branch network in line with soma drift
+                    nCtx.moveTo(b.x1 + (n.driftX * breakProgress), b.y1 + (n.driftY * breakProgress));
+                    nCtx.lineTo(b.x2 + (n.driftX * breakProgress), b.y2 + (n.driftY * breakProgress));
+                    
+                    nCtx.strokeStyle = `rgba(${n.glowColor}, ${(1 - breakProgress) * (0.05 + b.depth * 0.05)})`;
+                    nCtx.lineWidth = b.depth * 0.75; // Thicker trunk segments, thinner branching tips
+                    nCtx.stroke();
+                });
+
+                // Spawn real-time electric pulses traversing dendrites (when closed/mostly closed)
+                if (breakProgress < 0.8 && Math.random() > 0.95 && n.branches.length > 0) {
+                    const randomBranch = n.branches[Math.floor(Math.random() * n.branches.length)];
+                    n.pulses.push({
+                        x1: randomBranch.x1 + (n.driftX * breakProgress),
+                        y1: randomBranch.y1 + (n.driftY * breakProgress),
+                        x2: randomBranch.x2 + (n.driftX * breakProgress),
+                        y2: randomBranch.y2 + (n.driftY * breakProgress),
+                        progress: 0,
+                        speed: 0.04 + Math.random() * 0.04
+                    });
+                }
+
+                // Render Action Potential Pulses
+                for (let i = n.pulses.length - 1; i >= 0; i--) {
+                    const p = n.pulses[i];
+                    p.progress += p.speed;
+                    
+                    const px = p.x1 + (p.x2 - p.x1) * p.progress;
+                    const py = p.y1 + (p.y2 - p.y1) * p.progress;
+
+                    nCtx.beginPath();
+                    nCtx.arc(px, py, 2.5, 0, Math.PI * 2);
+                    nCtx.fillStyle = '#ffffff';
+                    
+                    nCtx.shadowColor = `rgb(${n.glowColor})`;
+                    nCtx.shadowBlur = 8;
+                    nCtx.fill();
+                    nCtx.shadowBlur = 0; // reset
+
+                    if (p.progress >= 1.0) {
+                        n.pulses.splice(i, 1);
+                    }
+                }
             });
 
-            // Calculate, Draw and Move Nodes (Synapses)
-            neuralNodes.forEach(node => {
-                // Nodes drift further apart as progress ratio increases
-                node.currentX = node.startX + (node.driftX * breakProgress);
-                node.currentY = node.startY + (node.driftY * breakProgress);
+            // Draw Electrical Synapse Connections & Snapping Arcs
+            electricalSynapses.forEach(s => {
+                const currentDist = Math.hypot(s.from.x - s.to.x, s.from.y - s.to.y);
+                const tension = currentDist / s.originalDist;
 
-                nCtx.beginPath();
-                nCtx.arc(node.currentX, node.currentY, node.radius, 0, Math.PI * 2);
-                
-                // Inner solid core
-                nCtx.fillStyle = `rgba(255, 255, 255, ${1 - breakProgress})`;
-                nCtx.fill();
-
-                // Outer glowing aura
-                const nodeGlow = nCtx.createRadialGradient(node.currentX, node.currentY, 0, node.currentX, node.currentY, node.radius * 2.5);
-                nodeGlow.addColorStop(0, `rgba(${node.glowColor}, ${1 - breakProgress})`);
-                nodeGlow.addColorStop(1, `rgba(${node.glowColor}, 0)`);
-                nCtx.fillStyle = nodeGlow;
-                nCtx.fill();
+                if (tension < 1.35) {
+                    // Connection is standard/stretched, draw high-frequency electrical charge line
+                    nCtx.beginPath();
+                    nCtx.moveTo(s.from.x, s.from.y);
+                    nCtx.lineTo(s.to.x, s.to.y);
+                    nCtx.strokeStyle = `rgba(6, 182, 212, ${(1 - breakProgress) * 0.15})`;
+                    nCtx.lineWidth = 1.5;
+                    nCtx.stroke();
+                } else if (tension < 2.0) {
+                    // Synaptic tension is critical: Snapping apart! Draw violent electrical lightning arcs
+                    const sparkOpacity = (2.0 - tension) / 0.65;
+                    drawElectricalArc(nCtx, s.from.x, s.from.y, s.to.x, s.to.y, sparkOpacity * (1 - breakProgress), s.from.glowColor);
+                    
+                    // Spawn exploding spark embers at snapping nodes
+                    if (Math.random() > 0.7) {
+                        const midX = (s.from.x + s.to.x) / 2;
+                        const midY = (s.from.y + s.to.y) / 2;
+                        spawnSnappingSpark(midX, midY, s.from.glowColor);
+                    }
+                }
             });
+
+            // Render Exploding Snapping Spark Embers
+            for (let i = snappingSparks.length - 1; i >= 0; i--) {
+                const sp = snappingSparks[i];
+                nCtx.beginPath();
+                nCtx.arc(sp.x, sp.y, sp.radius, 0, Math.PI * 2);
+                nCtx.fillStyle = `rgba(${sp.color}, ${sp.opacity * (1 - breakProgress)})`;
+                nCtx.fill();
+
+                sp.x += sp.vx;
+                sp.y += sp.vy;
+                sp.opacity -= 0.02;
+
+                if (sp.opacity <= 0) {
+                    snappingSparks.splice(i, 1);
+                }
+            }
 
             // Fade the solid background block out smoothly to reveal starry space
             entranceContainer.style.opacity = `${1 - breakProgress}`;
@@ -558,6 +718,19 @@
             mainContent.style.transform = `translateY(${(1 - contentProgress) * 50}px)`;
 
             requestAnimationFrame(updateParallaxFrames);
+        }
+
+        // Spawn a snapping ember particle
+        function spawnSnappingSpark(x, y, color) {
+            snappingSparks.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 5,
+                vy: (Math.random() - 0.5) * 5,
+                radius: 1 + Math.random() * 2,
+                opacity: 1,
+                color: color
+            });
         }
 
         // Run animation engine
