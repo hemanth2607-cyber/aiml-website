@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events Portal | V.S.B. Engineering College</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
+        
+        * {
+            cursor: none !important;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #03000a;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        .heading-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .galaxy-card {
+            background: rgba(13, 8, 28, 0.85);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+
+        .galaxy-card:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+        }
+
+        /* Custom Cosmic Cursor */
+        .custom-cursor {
+            width: 14px;
+            height: 14px;
+            background: #06b6d4;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #06b6d4, 0 0 20px #2563eb;
+            transition: transform 0.08s ease-out;
+        }
+
+        @media (max-width: 640px) {
+            .custom-cursor {
+                display: none !important;
+            }
+            * {
+                cursor: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12 min-h-screen flex flex-col justify-between">
+
+    <!-- Active Custom Cursor -->
+    <div id="cursor-core" class="custom-cursor"></div>
+
+    <div class="max-w-6xl mx-auto w-full flex-grow">
+        <!-- Header Controls -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+            <div>
+                <a href="/" class="heading-font text-xs tracking-widest text-cyan-400 hover:text-cyan-300 block mb-2">← Back to Dashboard</a>
+                <h1 class="heading-font text-3xl font-black text-white tracking-wider">
+                    EVENTS PORTAL TERMINAL
+                </h1>
+                <p class="text-xs text-gray-400 mt-1">Official engineering symposiums and hackathon schedules</p>
+            </div>
+            <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 text-xs px-4 py-2 rounded-xl transition">Sign Out</a>
+        </div>
+
+        <!-- Events Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <% if (events && events.length > 0) { %>
+                <% events.forEach(event => { %>
+                    <div class="galaxy-card p-8 rounded-3xl flex flex-col justify-between h-fit">
+                        <div>
+                            <div class="flex justify-between items-center text-xs text-gray-500 mb-4 font-mono">
+                                <span class="border border-cyan-500/20 text-cyan-300 bg-cyan-950/20 px-2 py-0.5 rounded-full"><%= event.location %></span>
+                                <span><%= event.date %></span>
+                            </div>
+                            <h2 class="heading-font text-xl font-bold text-white mb-3"><%= event.title %></h2>
+                            <p class="text-gray-400 text-xs leading-relaxed"><%= event.summary %></p>
+                        </div>
+                        <div class="pt-6 mt-6 border-t border-white/5 flex justify-between items-center">
+                            <span class="text-[10px] text-gray-500 font-mono">Status: Registrations Open</span>
+                            <a href="<%= event.registration_link %>" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold font-mono">[ REGISTER NOW → ]</a>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p class="text-gray-500 text-xs col-span-2">No active engineering events reported inside database nodes.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Global Footer -->
+    <footer class="border-t border-white/5 py-8 text-center mt-24">
+        <p class="text-[10px] text-gray-500 font-normal">V.S.B. Engineering College, Karur, Tamil Nadu, India.</p>
+        <p class="text-[9px] text-gray-600 mt-1">&copy; 2025 VSB Department of AI &amp; ML. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Active Tracker script -->
+    <script>
+        const cursor = document.getElementById('cursor-core');
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth > 640) {
+                cursor.style.left = `${e.clientX}px`;
+                cursor.style.top = `${e.clientY}px`;
+            }
+        });
+    </script>
+</body>
+</html>

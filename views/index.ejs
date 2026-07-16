@@ -16,7 +16,11 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #03000a;
             color: #f3f4f6;
+            <% if (!user) { %>
+            overflow: hidden !important; /* Lock visitor screen completely if not logged in */
+            <% } else { %>
             overflow-x: hidden;
+            <% } %>
         }
 
         .heading-font {
@@ -49,11 +53,11 @@
             will-change: transform;
         }
 
-        /* Entrance Overlay Section (Holding the Neural Network Canvas) */
+        /* Entrance Overlay Section (Holding the Cybernetic Brain & Gears Canvas) */
         #entrance-container {
             position: fixed;
             inset: 0;
-            background-color: #060214; /* Deep cybernetic dark violet background */
+            background-color: #060214; 
             z-index: 50;
             pointer-events: none;
             will-change: opacity, filter;
@@ -86,21 +90,33 @@
             text-shadow: 0 0 15px rgba(6, 182, 212, 0.7), 0 0 30px rgba(6, 182, 212, 0.3);
         }
 
-        .galaxy-card {
-            background: rgba(13, 8, 28, 0.8);
-            border: 1px solid rgba(139, 92, 246, 0.2);
+        /* Interconnected Dashboard Portals (Nodes) */
+        .portal-node {
+            background: rgba(13, 8, 28, 0.85);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.05);
             backdrop-filter: blur(12px);
-            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, border-color, box-shadow;
         }
 
-        .galaxy-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(6, 182, 212, 0.4);
-            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+        .portal-node:hover {
+            border-color: #a855f7;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.35);
+            transform: scale(1.03) translateY(-4px);
+        }
+
+        #dashboard-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
         }
 
         @media (max-width: 640px) {
-            /* Disable custom cursor and stardust trail on mobile touch devices */
+            /* Disable custom cursor on mobile touch screens to prevent lag */
             .custom-cursor {
                 display: none !important;
             }
@@ -115,151 +131,118 @@
     <!-- Interactive Custom Cursor -->
     <div id="cursor-core" class="custom-cursor"></div>
 
-    <!-- Cosmic Starfield & Stardust Particle Layer -->
+    <!-- Cosmic Starfield Layer -->
     <canvas id="starfield"></canvas>
 
-    <!-- Opaque Neural Network Transition Overlay -->
-    <div id="entrance-container">
-        <canvas id="neural-canvas"></canvas>
-    </div>
-
-    <!-- Entrance Title Card -->
-    <div id="splash-screen" class="px-4">
-        <div class="text-center max-w-4xl mx-auto">
-            <!-- VSB Official Logo -->
-            <div class="mb-4 sm:mb-6 flex justify-center">
-                <img src="/images/vsb-logo.png" alt="V.S.B. College Logo" class="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
-            </div>
-            <span class="heading-font text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.4em] uppercase text-cyan-400 block mb-2 font-semibold">V.S.B. Engineering College</span>
-            <h1 class="heading-font text-xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-wider leading-tight uppercase">
-                Artificial Intelligence <br>&amp; <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 neon-glow-cyan">Machine Learning</span>
-            </h1>
-            
-            <!-- Dynamic Scroll Prompt -->
-            <div class="mt-12 sm:mt-16 flex flex-col items-center justify-center space-y-2">
-                <span class="text-cyan-400 text-[9px] sm:text-[10px] tracking-[0.3em] font-mono animate-pulse">[ SCROLL TO REVEAL ]</span>
-                <div class="text-cyan-400 text-xs animate-bounce font-mono">↓</div>
-            </div>
+    <% if (!user) { %>
+        <!-- ========================================================================
+             1. PUBLIC VISITOR SCREEN (Locked: Brain, Gears, and Login link)
+             ======================================================================== -->
+        
+        <!-- Opaque Neural/Gear transition overlay -->
+        <div id="entrance-container">
+            <canvas id="neural-canvas"></canvas>
         </div>
-    </div>
 
-    <!-- Global Navigation -->
-    <nav class="fixed top-0 left-0 w-full z-40 bg-black/50 backdrop-blur-md border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
-        <!-- Brand Header with Logo and Accreditation Details Sub-label -->
-        <div class="flex flex-col items-center sm:items-start text-center sm:text-left">
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
-                <a href="/" class="heading-font text-xs sm:text-sm font-bold tracking-widest text-white">
-                    V.S.B. AI &amp; ML
+        <div id="splash-screen" class="px-4">
+            <div class="text-center max-w-4xl mx-auto flex flex-col items-center justify-center">
+                <!-- VSB Official Logo -->
+                <div class="mb-4 sm:mb-6">
+                    <img src="/images/vsb-logo.png" alt="V.S.B. College Logo" class="w-20 h-20 sm:w-28 sm:h-28 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
+                </div>
+                <span class="heading-font text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.4em] uppercase text-cyan-400 block mb-2 font-semibold">V.S.B. Engineering College</span>
+                <h1 class="heading-font text-xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-wider leading-tight uppercase mb-8">
+                    Artificial Intelligence <br>&amp; <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 neon-glow-cyan">Machine Learning</span>
+                </h1>
+                
+                <!-- Main Locked Portal Sign-in Cable Terminal Button -->
+                <a href="/login" class="pointer-events-auto heading-font text-xs sm:text-sm tracking-widest text-cyan-400 bg-cyan-950/20 hover:bg-cyan-500/20 border border-cyan-500/40 hover:border-cyan-400 px-8 py-3 rounded-full transition shadow-lg shadow-cyan-500/10 hover:shadow-cyan-400/20 relative z-[60]">
+                    [ ACCESS PORTAL TERMINAL ]
                 </a>
-            </div>
-            <!-- Accreditation Details (Wrapped dynamically on mobile) -->
-            <div class="text-[8px] sm:text-[10px] text-gray-400 mt-1 font-normal tracking-wide leading-none max-w-[240px] sm:max-w-md" style="font-family: 'Times New Roman', Times, serif;">
-                Affiliated to Anna University, Chennai &amp; Approved by AICTE, New Delhi
+                
+                <p class="text-[9px] text-gray-500 mt-6 tracking-widest font-mono uppercase">[ Login required to enter core indexes ]</p>
             </div>
         </div>
+    <% } else { %>
+        <!-- ========================================================================
+             2. PRIVATE STUDENT DASHBOARD (Interconnected portals)
+             ======================================================================== -->
         
-        <!-- Navigation Menu -->
-        <div class="flex items-center space-x-4 sm:space-x-6 text-[10px] sm:text-xs font-mono">
-            <a href="#feed" class="text-gray-300 hover:text-cyan-400 transition">Feeds</a>
-            <a href="#blogs" class="text-gray-300 hover:text-purple-400 transition">Syllabus &amp; Logs</a>
-            <% if (user) { %>
-                <% if (user.role === 'admin') { %>
-                    <a href="/admin" class="text-yellow-400 hover:text-yellow-300 transition">Admin Console</a>
-                <% } %>
-                <span class="text-purple-300 font-semibold"><%= user.email.split('@')[0] %></span>
-                <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-2 py-0.5 sm:px-3 sm:py-1 rounded transition">Exit</a>
-            <% } else { %>
-                <a href="/login" class="bg-purple-900/40 border border-purple-500/30 hover:bg-purple-800/60 text-purple-200 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded transition">Portal Sign-in</a>
-            <% } %>
+        <!-- Global Navigation -->
+        <nav class="fixed top-0 left-0 w-full z-40 bg-black/50 backdrop-blur-md border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
+            <div class="flex flex-col items-center sm:items-start text-center sm:text-left">
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
+                    <a href="/" class="heading-font text-xs sm:text-sm font-bold tracking-widest text-white">
+                        V.S.B. AI &amp; ML
+                    </a>
+                </div>
+                <div class="text-[8px] sm:text-[10px] text-gray-400 mt-1 font-normal tracking-wide leading-none max-w-[240px] sm:max-w-md" style="font-family: 'Times New Roman', Times, serif;">
+                    Affiliated to Anna University, Chennai &amp; Approved by AICTE, New Delhi
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-6 text-xs font-mono">
+                <span class="text-purple-300 font-semibold"><%= user.email.split('@')[0] %> (Student)</span>
+                <a href="/logout" class="bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-red-300 px-3 py-1 rounded transition">Logoff</a>
+            </div>
+        </nav>
+
+        <!-- Interconnected portal dashboard -->
+        <div class="relative w-screen min-h-screen flex items-center justify-center pt-24 pb-12 overflow-hidden">
+            <!-- Neural Wiring Canvas Layer -->
+            <canvas id="dashboard-canvas"></canvas>
+
+            <div class="relative z-30 max-w-5xl mx-auto px-6 w-full">
+                <div class="text-center mb-16">
+                    <span class="text-xs uppercase font-mono tracking-widest text-cyan-400">[ SECURED INDEX CORE ]</span>
+                    <h1 class="heading-font text-3xl sm:text-5xl font-extrabold text-white mt-2 uppercase">VSB AI &amp; ML Portal</h1>
+                    <p class="text-gray-400 text-xs sm:text-sm mt-3 max-w-lg mx-auto">Select a terminal node below to explore active sub-systems.</p>
+                </div>
+
+                <!-- Triangular Interconnected Portal Nodes Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                    
+                    <!-- Node 1: Events -->
+                    <a id="node-events" href="/events" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
+                        <div>
+                            <span class="text-[9px] font-mono tracking-widest text-cyan-400 block mb-2">[ SYSTEM 01 ]</span>
+                            <h2 class="heading-font text-lg sm:text-xl font-bold text-white mb-3">EVENTS PORTAL</h2>
+                            <p class="text-gray-400 text-xs leading-relaxed">Access active engineering symposiums, technical challenges, and live department hackathons.</p>
+                        </div>
+                        <span class="text-xs text-cyan-400 font-mono tracking-widest">[ ACCESS TERMINAL → ]</span>
+                    </a>
+
+                    <!-- Node 2: Academics -->
+                    <a id="node-academics" href="/academics" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
+                        <div>
+                            <span class="text-[9px] font-mono tracking-widest text-purple-400 block mb-2">[ SYSTEM 02 ]</span>
+                            <h2 class="heading-font text-lg sm:text-xl font-bold text-white mb-3">ACADEMIC UPDATES</h2>
+                            <p class="text-gray-400 text-xs leading-relaxed">Review syllabus configurations, research paper submissions, and high-performance laboratory structures.</p>
+                        </div>
+                        <span class="text-xs text-purple-400 font-mono tracking-widest">[ ACCESS TERMINAL → ]</span>
+                    </a>
+
+                    <!-- Node 3: Announcements -->
+                    <a id="node-announcements" href="/announcements" class="portal-node p-8 rounded-3xl flex flex-col justify-between h-64 hover:scale-[1.03]">
+                        <div>
+                            <span class="text-[9px] font-mono tracking-widest text-pink-400 block mb-2">[ SYSTEM 03 ]</span>
+                            <h2 class="heading-font text-lg sm:text-xl font-bold text-white mb-3">ANNOUNCEMENTS</h2>
+                            <p class="text-gray-400 text-xs leading-relaxed">Acquire official semester notifications, academic calendars, and real-time department alerts.</p>
+                        </div>
+                        <span class="text-xs text-pink-400 font-mono tracking-widest">[ ACCESS TERMINAL → ]</span>
+                    </a>
+
+                </div>
+            </div>
         </div>
-    </nav>
 
-    <!-- Main Dynamic Interface Layout -->
-    <main id="main-content" class="relative z-30 max-w-6xl mx-auto px-4 sm:px-6 pb-24" style="opacity: 0; transform: translateY(40px); will-change: opacity, transform;">
-        
-        <!-- VSB College Introductory Banner -->
-        <header class="mb-16 sm:mb-24 text-center">
-            <div class="flex justify-center mb-4">
-                <img src="/images/vsb-logo.png" alt="V.S.B. Logo" class="w-12 h-12 sm:w-16 sm:h-16 object-contain">
-            </div>
-            <span class="text-xs uppercase font-mono tracking-widest text-purple-400">Department of AI &amp; ML</span>
-            <h2 class="heading-font text-2xl sm:text-3xl md:text-4xl font-black text-white mt-2 px-2">
-                V.S.B. Engineering College
-            </h2>
-            <p class="text-gray-400 text-xs sm:text-sm md:text-base max-w-xl mx-auto mt-4 leading-relaxed px-4">
-                Empowering the future through state-of-the-art computational algorithms, deep learning models, and complex data analytic infrastructures.
-            </p>
-        </header>
-
-        <!-- Department Overview Static Grid -->
-        <section id="feed" class="mb-16 sm:mb-24 scroll-mt-24">
-            <div class="flex items-center space-x-3 mb-6 sm:mb-8">
-                <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-                <h3 class="heading-font text-lg sm:text-xl font-bold tracking-wider">Department Features</h3>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="galaxy-card p-6 rounded-2xl">
-                    <div class="text-[10px] text-purple-400 font-mono tracking-widest mb-2">[ INFRASTRUCTURE ]</div>
-                    <h4 class="heading-font text-base sm:text-lg font-bold mb-2 text-white">Modern GPU Lab</h4>
-                    <p class="text-gray-400 text-xs leading-relaxed">
-                        Dedicated computing workstations equipped with deep learning software stacks for training neural networks.
-                    </p>
-                </div>
-                <div class="galaxy-card p-6 rounded-2xl">
-                    <div class="text-[10px] text-cyan-400 font-mono tracking-widest mb-2">[ CURRICULUM ]</div>
-                    <h4 class="heading-font text-base sm:text-lg font-bold mb-2 text-white">Industry Alignment</h4>
-                    <p class="text-gray-400 text-xs leading-relaxed">
-                        Course structures oriented around continuous real-world integration, natural language processing, and robotics.
-                    </p>
-                </div>
-                <div class="galaxy-card p-6 rounded-2xl">
-                    <div class="text-[10px] text-pink-400 font-mono tracking-widest mb-2">[ COLLABORATION ]</div>
-                    <h4 class="heading-font text-base sm:text-lg font-bold mb-2 text-white">Global Research</h4>
-                    <p class="text-gray-400 text-xs leading-relaxed">
-                        Working in partnership with leading tech clusters to support student project internships and secure placements.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Dynamic Blogs Section from Database -->
-        <section id="blogs" class="scroll-mt-24">
-            <div class="flex items-center space-x-3 mb-6 sm:mb-8">
-                <span class="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-                <h3 class="heading-font text-lg sm:text-xl font-bold tracking-wider">Academic Publications &amp; News</h3>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                <% if (blogs && blogs.length > 0) { %>
-                    <% blogs.forEach(blog => { %>
-                        <article class="galaxy-card p-6 sm:p-8 rounded-2xl flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-center text-[10px] text-gray-500 mb-4 font-mono">
-                                    <span class="border border-purple-500/20 text-purple-300 bg-purple-950/20 px-2 py-0.5 rounded-full"><%= blog.category %></span>
-                                    <span><%= blog.date %></span>
-                                </div>
-                                <h4 class="heading-font text-lg sm:text-xl font-bold text-white mb-2"><%= blog.title %></h4>
-                                <p class="text-gray-400 text-xs leading-relaxed mb-6"><%= blog.summary %></p>
-                            </div>
-                            <div class="flex justify-between items-center pt-4 border-t border-white/5 text-[10px] sm:text-xs text-gray-500 font-mono">
-                                <span>Registry: Official VSB Source</span>
-                                <span class="text-cyan-400 font-semibold cursor-pointer">Explore →</span>
-                            </div>
-                        </article>
-                    <% }) %>
-                <% } else { %>
-                    <p class="text-gray-500 text-xs col-span-2">No educational logs reported yet.</p>
-                <% } %>
-            </div>
-        </section>
-    </main>
-
-    <!-- Global Footer -->
-    <footer class="border-t border-white/5 py-8 sm:py-12 relative z-30 bg-black/60 backdrop-blur-md mt-24 text-center px-4">
-        <p class="text-[10px] sm:text-xs text-gray-400 font-normal">V.S.B. Engineering College, Karur, Tamil Nadu, India.</p>
-        <p class="text-[9px] sm:text-xs text-gray-600 mt-2">&copy; 2025 VSB Department of Artificial Intelligence and Machine Learning. All Rights Reserved.</p>
-    </footer>
+        <!-- Global Footer -->
+        <footer class="border-t border-white/5 py-8 relative z-30 bg-black/60 text-center px-4">
+            <p class="text-[10px] text-gray-500 font-normal">V.S.B. Engineering College, Karur, Tamil Nadu, India.</p>
+            <p class="text-[9px] text-gray-600 mt-1">&copy; 2025 VSB Department of AI &amp; ML. All Rights Reserved.</p>
+        </footer>
+    <% } %>
 
     <!-- Scripting for Cursors, Stars, and Bidirectional Scroll Animations -->
     <script>
@@ -282,7 +265,7 @@
         });
 
         // Hover enlargements
-        document.querySelectorAll('a, button, .galaxy-card').forEach(element => {
+        document.querySelectorAll('a, button, .galaxy-card, .portal-node').forEach(element => {
             element.addEventListener('mouseenter', () => {
                 cursorCore.style.transform = 'translate(-50%, -50%) scale(1.6)';
                 cursorCore.style.backgroundColor = '#06b6d4';
@@ -324,8 +307,8 @@
             stardustParticles.push({
                 x: x,
                 y: y,
-                vx: (Math.random() - 0.5) * 1.5, // Drift sideways
-                vy: (Math.random() - 0.5) * 1.5 + 0.5, // Slight downward sink
+                vx: (Math.random() - 0.5) * 1.5, 
+                vy: (Math.random() - 0.5) * 1.5 + 0.5, 
                 radius: 1 + Math.random() * 2,
                 opacity: 1,
                 decay: 0.015 + Math.random() * 0.015,
@@ -338,7 +321,7 @@
             ctx.fillStyle = '#03000a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Draw background stars
+            // Draw background stars
             stars.forEach(star => {
                 ctx.beginPath();
                 ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
@@ -350,13 +333,12 @@
                 if (star.brightness > 1) star.brightness = 1;
             });
 
-            // 2. Draw and update trailing cursor stardust
+            // Draw and update trailing cursor stardust
             for (let i = stardustParticles.length - 1; i >= 0; i--) {
                 const p = stardustParticles[i];
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                 
-                // Glowing radial gradient for stardust look
                 const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 2);
                 gradient.addColorStop(0, `rgba(${p.color}, ${p.opacity})`);
                 gradient.addColorStop(1, `rgba(${p.color}, 0)`);
@@ -364,12 +346,10 @@
                 ctx.fillStyle = gradient;
                 ctx.fill();
 
-                // Apply kinematics
                 p.x += p.vx;
                 p.y += p.vy;
                 p.opacity -= p.decay;
 
-                // Remove dead particles
                 if (p.opacity <= 0) {
                     stardustParticles.splice(i, 1);
                 }
@@ -385,356 +365,257 @@
 
         /* 
            ========================================================================
-           SCROLL REVEAL CONFIGURATION TIMELINES
+           LOCKED PUBLIC ENTRANCE GATEWAY (BRAIN, SPINNING GEARS & AXON TERMINALS)
            ========================================================================
         */
-        const TOTAL_PAGE_MULTIPLIER = 4.0; // Total scroll range of the page
-        const LERP_EASE = 0.06;            // Deceleration physics factor for scroll easing.
+        <% if (!user) { %>
+            const nCanvas = document.getElementById('neural-canvas');
+            const nCtx = nCanvas.getContext('2d');
+            let brainX = 0, brainY = 0, brainSize = 100;
+            let gears = [];
+            let axonPathways = [];
 
-        const entranceContainer = document.getElementById('entrance-container');
-        const splashScreen = document.getElementById('splash-screen');
-        const mainContent = document.getElementById('main-content');
+            function resizeNeuralCanvas() {
+                nCanvas.width = window.innerWidth;
+                nCanvas.height = window.innerHeight;
+                initializeNeuralVisuals();
+            }
 
-        let targetScrollY = 0;
-        let interpolatedScrollY = 0;
+            // Draw mechanical gears
+            function drawGear(ctx, x, y, radius, teeth, angle, color) {
+                ctx.beginPath();
+                const innerRadius = radius * 0.75;
+                const outerRadius = radius * 1.15;
+                
+                for (let i = 0; i < teeth; i++) {
+                    const step = (Math.PI * 2) / teeth;
+                    const theta = i * step + angle;
+                    
+                    ctx.lineTo(x + Math.cos(theta) * innerRadius, y + Math.sin(theta) * innerRadius);
+                    ctx.lineTo(x + Math.cos(theta + step * 0.3) * outerRadius, y + Math.sin(theta + step * 0.3) * outerRadius);
+                    ctx.lineTo(x + Math.cos(theta + step * 0.7) * outerRadius, y + Math.sin(theta + step * 0.7) * outerRadius);
+                    ctx.lineTo(x + Math.cos(theta + step) * innerRadius, y + Math.sin(theta + step) * innerRadius);
+                }
+                
+                ctx.closePath();
+                ctx.fillStyle = `rgba(${color}, 0.1)`;
+                ctx.fill();
+                ctx.strokeStyle = `rgba(${color}, 0.5)`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // Draw central shaft hole
+                ctx.beginPath();
+                ctx.arc(x, y, radius * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = '#060214';
+                ctx.fill();
+                ctx.stroke();
+            }
 
-        // Space out content height
-        function adjustMainContentMargin() {
-            const spacerHeight = window.innerHeight * TOTAL_PAGE_MULTIPLIER;
-            mainContent.style.marginTop = `${spacerHeight}px`;
-        }
+            // Draw stylized biological brain
+            function drawBrain(ctx, x, y, size) {
+                // Left Lobe
+                ctx.beginPath();
+                ctx.ellipse(x - size * 0.35, y, size * 0.5, size * 0.65, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(6, 182, 212, 0.05)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
 
-        window.addEventListener('resize', adjustMainContentMargin);
-        adjustMainContentMargin();
+                // Right Lobe
+                ctx.beginPath();
+                ctx.ellipse(x + size * 0.35, y, size * 0.5, size * 0.65, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(168, 85, 247, 0.3)';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
 
-        window.addEventListener('scroll', () => {
-            targetScrollY = window.scrollY;
-        });
+                // Brain internal sulci (wrinkles)
+                ctx.beginPath();
+                ctx.moveTo(x - size * 0.3, y - size * 0.3);
+                ctx.bezierCurveTo(x - size * 0.5, y - size * 0.1, x - size * 0.1, y + size * 0.2, x - size * 0.2, y + size * 0.4);
+                ctx.moveTo(x + size * 0.3, y - size * 0.3);
+                ctx.bezierCurveTo(x + size * 0.5, y - size * 0.1, x + size * 0.1, y + size * 0.2, x + size * 0.2, y + size * 0.4);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
 
+            function initializeNeuralVisuals() {
+                const w = nCanvas.width;
+                const h = nCanvas.height;
+
+                brainX = w * 0.5;
+                brainY = h * 0.5;
+                brainSize = w < 640 ? 65 : 110;
+
+                // Setup 4 spinning gears around the central brain
+                gears = [
+                    { x: w * 0.25, y: h * 0.35, r: w < 640 ? 30 : 50, teeth: 10, speed: 0.015, angle: 0, color: '6, 182, 212' },
+                    { x: w * 0.75, y: h * 0.35, r: w < 640 ? 35 : 55, teeth: 12, speed: -0.012, angle: 0, color: '168, 85, 247' },
+                    { x: w * 0.20, y: h * 0.65, r: w < 640 ? 40 : 60, teeth: 14, speed: -0.01, angle: 0, color: '168, 85, 247' },
+                    { x: w * 0.70, y: h * 0.70, r: w < 640 ? 30 : 45, teeth: 8, speed: 0.02, angle: 0, color: '6, 182, 212' }
+                ];
+
+                axonPathways = [];
+                // Connect gears to the brain with nerve-wires
+                gears.forEach(g => {
+                    axonPathways.push({ x1: brainX, y1: brainY, x2: g.x, y2: g.y, color: g.color, pulses: [] });
+                });
+            }
+
+            window.addEventListener('resize', resizeNeuralCanvas);
+            resizeStars(); // Run alongside starfield
+            resizeNeuralCanvas();
+
+            function drawEntranceLoop() {
+                nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
+
+                // 1. Draw central brain
+                drawBrain(nCtx, brainX, brainY, brainSize);
+
+                // 2. Draw nerve pathways and moving electrical charges
+                axonPathways.forEach(path => {
+                    nCtx.beginPath();
+                    nCtx.moveTo(path.x1, path.y1);
+                    nCtx.lineTo(path.x2, path.y2);
+                    nCtx.strokeStyle = `rgba(${path.color}, 0.15)`;
+                    nCtx.lineWidth = 1.5;
+                    nCtx.stroke();
+
+                    // Periodically spawn electrical pulses down the axons
+                    if (Math.random() > 0.98) {
+                        path.pulses.push({ progress: 0, speed: 0.01 + Math.random() * 0.015 });
+                    }
+
+                    // Render active electrical pulses
+                    for (let i = path.pulses.length - 1; i >= 0; i--) {
+                        const p = path.pulses[i];
+                        p.progress += p.speed;
+
+                        const px = path.x1 + (path.x2 - path.x1) * p.progress;
+                        const py = path.y1 + (path.y2 - path.y1) * p.progress;
+
+                        nCtx.beginPath();
+                        nCtx.arc(px, py, 3.5, 0, Math.PI * 2);
+                        nCtx.fillStyle = '#ffffff';
+                        nCtx.shadowColor = `rgb(${path.color})`;
+                        nCtx.shadowBlur = 8;
+                        nCtx.fill();
+                        nCtx.shadowBlur = 0; // reset
+
+                        if (p.progress >= 1) {
+                            path.pulses.splice(i, 1);
+                        }
+                    }
+                });
+
+                // 3. Draw and rotate gears
+                gears.forEach(g => {
+                    g.angle += g.speed;
+                    drawGear(nCtx, g.x, g.y, g.r, g.teeth, g.angle, g.color);
+                });
+
+                requestAnimationFrame(drawEntranceLoop);
+            }
+            requestAnimationFrame(drawEntranceLoop);
+        <% } %>
 
         /* 
            ========================================================================
-           BIOLOGICAL NEURAL NETWORK DISSOCIATION ENGINE (CANVAS)
+           PRIVATE CONNECTED NEURAL PORTALS ENGINE (POST-LOGIN DASHBOARD)
            ========================================================================
         */
-        const nCanvas = document.getElementById('neural-canvas');
-        const nCtx = nCanvas.getContext('2d');
-        let biologicalNeurons = [];
-        let electricalSynapses = [];
-        let snappingSparks = []; // Spark array for snapping effects
+        <% if (user) { %>
+            const dCanvas = document.getElementById('dashboard-canvas');
+            const dCtx = dCanvas.getContext('2d');
+            let connections = [];
 
-        function resizeNeuralCanvas() {
-            nCanvas.width = window.innerWidth;
-            nCanvas.height = window.innerHeight;
-            initializeBiologicalNetwork();
-        }
-
-        // Recursive dendrite branching generator (makes realistic organic neurons)
-        function generateDendriteTree(startX, startY, angle, length, depth, branchSegments) {
-            if (depth === 0) return;
-
-            const endX = startX + Math.cos(angle) * length;
-            const endY = startY + Math.sin(angle) * length;
-
-            branchSegments.push({
-                x1: startX,
-                y1: startY,
-                x2: endX,
-                y2: endY,
-                depth: depth
-            });
-
-            // Branch out recursively with organic noise
-            const branches = 2 + Math.floor(Math.random() * 2);
-            for (let i = 0; i < branches; i++) {
-                const newAngle = angle + (Math.random() - 0.5) * 1.1; // branching angles
-                const newLength = length * (0.55 + Math.random() * 0.25);
-                generateDendriteTree(endX, endY, newAngle, newLength, depth - 1, branchSegments);
+            function resizeDashboardCanvas() {
+                dCanvas.width = window.innerWidth;
+                dCanvas.height = window.innerHeight;
+                initializePortalConnections();
             }
-        }
 
-        function initializeBiologicalNetwork() {
-            biologicalNeurons = [];
-            electricalSynapses = [];
-            snappingSparks = [];
+            function initializePortalConnections() {
+                connections = [];
+                const elEvents = document.getElementById('node-events');
+                const elAcademics = document.getElementById('node-academics');
+                const elAnnouncements = document.getElementById('node-announcements');
 
-            const w = nCanvas.width;
-            const h = nCanvas.height;
+                if (!elEvents || !elAcademics || !elAnnouncements) return;
 
-            // Define 5 major biological neuron centers
-            const neuronConfigs = [
-                { x: w * 0.20, y: h * 0.30, size: 24, trunkLength: 70, depth: 3 }, // Input Left
-                { x: w * 0.25, y: h * 0.70, size: 28, trunkLength: 80, depth: 3 }, // Input Bottom Left
-                { x: w * 0.50, y: h * 0.50, size: 34, trunkLength: 95, depth: 4 }, // Central Processing Soma (Major)
-                { x: w * 0.75, y: h * 0.25, size: 26, trunkLength: 75, depth: 3 }, // Output Top Right
-                { x: w * 0.80, y: h * 0.65, size: 28, trunkLength: 80, depth: 3 }  // Output Bottom Right
-            ];
+                // Grab center coords of each portal card node
+                const getCenter = (el) => {
+                    const r = el.getBoundingClientRect();
+                    return {
+                        x: r.left + r.width / 2 + window.scrollX,
+                        y: r.top + r.height / 2 + window.scrollY
+                    };
+                };
 
-            neuronConfigs.forEach((config, idx) => {
-                const branchSegments = [];
-                // Generate 6 organic trunks per neuron outward at evenly spaced angles
-                const trunks = 6;
-                for (let i = 0; i < trunks; i++) {
-                    const baseAngle = (i / trunks) * Math.PI * 2;
-                    generateDendriteTree(config.x, config.y, baseAngle, config.trunkLength, config.depth, branchSegments);
-                }
+                const pts = [
+                    { name: 'events', pt: getCenter(elEvents), color: '6, 182, 212' },
+                    { name: 'academics', pt: getCenter(elAcademics), color: '168, 85, 247' },
+                    { name: 'announcements', pt: getCenter(elAnnouncements), color: '244, 63, 94' }
+                ];
 
-                biologicalNeurons.push({
-                    id: idx,
-                    x: config.x,
-                    y: config.y,
-                    startX: config.x,
-                    startY: config.y,
-                    size: config.size,
-                    branches: branchSegments,
-                    // Kinetic vectors for breaking dispersal
-                    driftX: (Math.random() - 0.5) * w * 1.6,
-                    driftY: (Math.random() - 0.5) * h * 1.6,
-                    glowColor: idx % 2 === 0 ? '6, 182, 212' : '168, 85, 247', // Alternate Cyan & Purple
-                    pulses: [] // active electrical signals traversing the branches
-                });
-            });
+                // Form triangular synapses
+                connections.push({ from: pts[0], to: pts[1], pulses: [] });
+                connections.push({ from: pts[1], to: pts[2], pulses: [] });
+                connections.push({ from: pts[2], to: pts[0], pulses: [] });
+            }
 
-            // Connect nearest neighboring neurons to form a structured functional network
-            for (let i = 0; i < biologicalNeurons.length; i++) {
-                const nA = biologicalNeurons[i];
-                for (let j = i + 1; j < biologicalNeurons.length; j++) {
-                    const nB = biologicalNeurons[j];
-                    const dist = Math.hypot(nA.x - nB.x, nA.y - nB.y);
-                    // If close enough, bridge them with an electrical axon pathway
-                    if (dist < w * 0.45) {
-                        electricalSynapses.push({ from: nA, to: nB, originalDist: dist });
+            window.addEventListener('resize', resizeDashboardCanvas);
+            resizeStars(); // Run alongside background stars
+            setTimeout(resizeDashboardCanvas, 300); // Slight delay to ensure DOM coordinates settle
+
+            function drawDashboardConnections() {
+                dCtx.clearRect(0, 0, dCanvas.width, dCanvas.height);
+
+                connections.forEach(conn => {
+                    dCtx.beginPath();
+                    dCtx.moveTo(conn.from.pt.x, conn.from.pt.y);
+                    dCtx.lineTo(conn.to.pt.x, conn.to.pt.y);
+                    dCtx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+                    dCtx.lineWidth = 2.0;
+                    dCtx.stroke();
+
+                    // Spawn nerve-pulses
+                    if (Math.random() > 0.98) {
+                        conn.pulses.push({ progress: 0, speed: 0.008 + Math.random() * 0.01 });
                     }
-                }
-            }
-        }
 
-        // Draw organic fluctuating somatic membranes
-        function drawOrganicSoma(ctx, x, y, radius, opacity, glowColor) {
-            ctx.beginPath();
-            const points = 16;
-            for (let i = 0; i < points; i++) {
-                const angle = (i / points) * Math.PI * 2;
-                // Add fluid somatic membrane ripples using trig frequencies
-                const ripple = radius * (0.85 + Math.sin(angle * 4 + Date.now() * 0.004) * 0.12);
-                const px = x + Math.cos(angle) * ripple;
-                const py = y + Math.sin(angle) * ripple;
-                if (i === 0) ctx.moveTo(px, py);
-                else ctx.lineTo(px, py);
-            }
-            ctx.closePath();
-            ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.95})`;
-            ctx.fill();
+                    // Render pulses
+                    for (let i = conn.pulses.length - 1; i >= 0; i--) {
+                        const p = conn.pulses[i];
+                        p.progress += p.speed;
 
-            // Soma glowing aura
-            const somaGlow = ctx.createRadialGradient(x, y, 0, x, y, radius * 3.0);
-            somaGlow.addColorStop(0, `rgba(${glowColor}, ${opacity * 0.8})`);
-            somaGlow.addColorStop(1, `rgba(${glowColor}, 0)`);
-            ctx.fillStyle = somaGlow;
-            ctx.fill();
-        }
+                        const px = conn.from.pt.x + (conn.to.pt.x - conn.from.pt.x) * p.progress;
+                        const py = conn.from.pt.y + (conn.to.pt.y - conn.from.pt.y) * p.progress;
 
-        // Mathematical fractal lightning generator for electrical snapping
-        function drawElectricalArc(ctx, x1, y1, x2, y2, opacity, color) {
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            let cx = x1;
-            let cy = y1;
-            const segments = 10;
-            
-            for (let i = 1; i <= segments; i++) {
-                const tx = x1 + (x2 - x1) * (i / segments);
-                const ty = y1 + (y2 - y1) * (i / segments);
-                
-                if (i < segments) {
-                    // Inject jagged electrical offsets
-                    cx = tx + (Math.random() - 0.5) * 25;
-                    cy = ty + (Math.random() - 0.5) * 25;
-                } else {
-                    cx = tx;
-                    cy = ty;
-                }
-                ctx.lineTo(cx, cy);
-            }
-            
-            ctx.strokeStyle = `rgba(${color}, ${opacity * 0.95})`;
-            ctx.lineWidth = 2.0;
-            ctx.shadowColor = `rgb(${color})`;
-            ctx.shadowBlur = 10; // high-intensity spark shadow
-            ctx.stroke();
-            ctx.shadowBlur = 0; // reset instantly to prevent downstream lag
-        }
+                        dCtx.beginPath();
+                        dCtx.arc(px, py, 4.0, 0, Math.PI * 2);
+                        
+                        // Active node matching color
+                        dCtx.fillStyle = `rgb(${conn.from.color})`;
+                        dCtx.shadowColor = `rgb(${conn.from.color})`;
+                        dCtx.shadowBlur = 10;
+                        dCtx.fill();
+                        dCtx.shadowBlur = 0; // reset
 
-        window.addEventListener('resize', resizeNeuralCanvas);
-        resizeNeuralCanvas();
-
-        // Frame update rendering loop
-        function updateParallaxFrames() {
-            interpolatedScrollY += (targetScrollY - interpolatedScrollY) * LERP_EASE;
-
-            const viewportHeight = window.innerHeight;
-
-            /* 1. NEURAL DISSOCIATION TIMELINE (Dissolves completely at exactly 1 viewport scroll) */
-            const breakDistance = viewportHeight * 1.1; 
-            const breakProgress = Math.min(Math.max(interpolatedScrollY / breakDistance, 0), 1);
-            
-            // Clear rendering space
-            nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
-            
-            // Render Active Biological Neurons
-            biologicalNeurons.forEach(n => {
-                // Calculate drift kinematic offsets
-                n.x = n.startX + (n.driftX * breakProgress);
-                n.y = n.startY + (n.driftY * breakProgress);
-
-                // Draw organic Somas
-                drawOrganicSoma(nCtx, n.x, n.y, n.size, 1 - breakProgress, n.glowColor);
-
-                // Update and draw recursive dendrite arbor trees
-                n.branches.forEach(b => {
-                    nCtx.beginPath();
-                    // Shift entire branch network in line with soma drift
-                    nCtx.moveTo(b.x1 + (n.driftX * breakProgress), b.y1 + (n.driftY * breakProgress));
-                    nCtx.lineTo(b.x2 + (n.driftX * breakProgress), b.y2 + (n.driftY * breakProgress));
-                    
-                    nCtx.strokeStyle = `rgba(${n.glowColor}, ${(1 - breakProgress) * (0.05 + b.depth * 0.05)})`;
-                    nCtx.lineWidth = b.depth * 0.75; // Thicker trunk segments, thinner branching tips
-                    nCtx.stroke();
+                        if (p.progress >= 1) {
+                            conn.pulses.splice(i, 1);
+                        }
+                    }
                 });
 
-                // Spawn real-time electric pulses traversing dendrites (when closed/mostly closed)
-                if (breakProgress < 0.8 && Math.random() > 0.95 && n.branches.length > 0) {
-                    const randomBranch = n.branches[Math.floor(Math.random() * n.branches.length)];
-                    n.pulses.push({
-                        x1: randomBranch.x1 + (n.driftX * breakProgress),
-                        y1: randomBranch.y1 + (n.driftY * breakProgress),
-                        x2: randomBranch.x2 + (n.driftX * breakProgress),
-                        y2: randomBranch.y2 + (n.driftY * breakProgress),
-                        progress: 0,
-                        speed: 0.04 + Math.random() * 0.04
-                    });
-                }
-
-                // Render Action Potential Pulses
-                for (let i = n.pulses.length - 1; i >= 0; i--) {
-                    const p = n.pulses[i];
-                    p.progress += p.speed;
-                    
-                    const px = p.x1 + (p.x2 - p.x1) * p.progress;
-                    const py = p.y1 + (p.y2 - p.y1) * p.progress;
-
-                    nCtx.beginPath();
-                    nCtx.arc(px, py, 2.5, 0, Math.PI * 2);
-                    nCtx.fillStyle = '#ffffff';
-                    
-                    nCtx.shadowColor = `rgb(${n.glowColor})`;
-                    nCtx.shadowBlur = 8;
-                    nCtx.fill();
-                    nCtx.shadowBlur = 0; // reset
-
-                    if (p.progress >= 1.0) {
-                        n.pulses.splice(i, 1);
-                    }
-                }
-            });
-
-            // Draw Electrical Synapse Connections & Snapping Arcs
-            electricalSynapses.forEach(s => {
-                const currentDist = Math.hypot(s.from.x - s.to.x, s.from.y - s.to.y);
-                const tension = currentDist / s.originalDist;
-
-                if (tension < 1.35) {
-                    // Connection is standard/stretched, draw high-frequency electrical charge line
-                    nCtx.beginPath();
-                    nCtx.moveTo(s.from.x, s.from.y);
-                    nCtx.lineTo(s.to.x, s.to.y);
-                    nCtx.strokeStyle = `rgba(6, 182, 212, ${(1 - breakProgress) * 0.15})`;
-                    nCtx.lineWidth = 1.5;
-                    nCtx.stroke();
-                } else if (tension < 2.0) {
-                    // Synaptic tension is critical: Snapping apart! Draw violent electrical lightning arcs
-                    const sparkOpacity = (2.0 - tension) / 0.65;
-                    drawElectricalArc(nCtx, s.from.x, s.from.y, s.to.x, s.to.y, sparkOpacity * (1 - breakProgress), s.from.glowColor);
-                    
-                    // Spawn exploding spark embers at snapping nodes
-                    if (Math.random() > 0.7) {
-                        const midX = (s.from.x + s.to.x) / 2;
-                        const midY = (s.from.y + s.to.y) / 2;
-                        spawnSnappingSpark(midX, midY, s.from.glowColor);
-                    }
-                }
-            });
-
-            // Render Exploding Snapping Spark Embers
-            for (let i = snappingSparks.length - 1; i >= 0; i--) {
-                const sp = snappingSparks[i];
-                nCtx.beginPath();
-                nCtx.arc(sp.x, sp.y, sp.radius, 0, Math.PI * 2);
-                nCtx.fillStyle = `rgba(${sp.color}, ${sp.opacity * (1 - breakProgress)})`;
-                nCtx.fill();
-
-                sp.x += sp.vx;
-                sp.y += sp.vy;
-                sp.opacity -= 0.02;
-
-                if (sp.opacity <= 0) {
-                    snappingSparks.splice(i, 1);
-                }
+                requestAnimationFrame(drawDashboardConnections);
             }
-
-            // Fade the solid background block out smoothly to reveal starry space
-            entranceContainer.style.opacity = `${1 - breakProgress}`;
-            entranceContainer.style.filter = `blur(${breakProgress * 15}px)`;
-
-            if (breakProgress >= 1.0) {
-                entranceContainer.style.visibility = 'hidden';
-            } else {
-                entranceContainer.style.visibility = 'visible';
-            }
-
-            /* 2. VSB TITLE FADE TIMELINE (Slower fade rate over 3.2 viewports, staying visible much longer) */
-            const fadeMaxDistance = viewportHeight * 3.2; 
-            const fadeProgress = Math.min(Math.max(interpolatedScrollY / fadeMaxDistance, 0), 1);
-            const opacityValue = Math.max(1 - fadeProgress, 0);
-            splashScreen.style.opacity = `${opacityValue}`;
-            splashScreen.style.transform = `scale(${1 - (fadeProgress * 0.04)})`;
-
-            // Toggle visibility to prevent background overlap
-            if (opacityValue <= 0.002) {
-                splashScreen.style.visibility = 'hidden';
-            } else {
-                splashScreen.style.visibility = 'visible';
-            }
-
-            /* 3. CONTENT REVEAL TIMELINE (Starts immediately after clouds open at 1.0, fully in at 2.5) */
-            const contentStartScroll = viewportHeight * 1.0; 
-            const contentEndScroll = viewportHeight * 2.5;   
-            
-            let contentProgress = (interpolatedScrollY - contentStartScroll) / (contentEndScroll - contentStartScroll);
-            contentProgress = Math.min(Math.max(contentProgress, 0), 1);
-
-            // Directly map calculated progress to transform matrix frames
-            mainContent.style.opacity = `${contentProgress}`;
-            mainContent.style.transform = `translateY(${(1 - contentProgress) * 50}px)`;
-
-            requestAnimationFrame(updateParallaxFrames);
-        }
-
-        // Spawn a snapping ember particle
-        function spawnSnappingSpark(x, y, color) {
-            snappingSparks.push({
-                x: x,
-                y: y,
-                vx: (Math.random() - 0.5) * 5,
-                vy: (Math.random() - 0.5) * 5,
-                radius: 1 + Math.random() * 2,
-                opacity: 1,
-                color: color
-            });
-        }
-
-        // Run animation engine
-        requestAnimationFrame(updateParallaxFrames);
+            requestAnimationFrame(drawDashboardConnections);
+        <% } %>
     </script>
 </body>
 </html>
