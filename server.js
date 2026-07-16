@@ -3,7 +3,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
-const svgCaptcha = require('svg-captcha'); // Added free self-contained captcha
+const svgCaptcha = require('svg-captcha');
 const crypto = require('crypto');
 const path = require('path');
 
@@ -134,13 +134,13 @@ const transporter = nodemailer.createTransport({
 // 3. PORTAL ENDPOINTS
 // ========================================================================
 
-// GET: Generate and return an inline SVG CAPTCHA (Customized for Galaxy theme)
+// GET: Generate and return a clean, legible grey-themed CAPTCHA
 app.get('/captcha', (req, res) => {
     const captcha = svgCaptcha.create({
         size: 4, // 4-character code
-        noise: 2, // minor noise lines to distract bots
-        color: true,
-        background: '#130d24' // exact matching dark purple background
+        noise: 1, // minimal noise to maintain high legibility
+        color: false, // monochromatic (cleaner grey/white layout)
+        background: '#374151' // grey background (Tailwind gray-700)
     });
     req.session.captcha = captcha.text.toLowerCase(); // save text to compare on submit
     res.type('svg');
