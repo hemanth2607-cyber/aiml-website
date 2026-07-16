@@ -119,16 +119,6 @@
                 </div>
             </div>
 
-            <!-- Inline CAPTCHA Integration (Sign-In) -->
-            <div class="bg-white/5 border border-white/5 p-4 rounded-xl space-y-3">
-                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Bot Protection Challenge</label>
-                <div class="flex items-center space-x-3">
-                    <img id="login-captcha-img" src="/captcha" alt="CAPTCHA" class="rounded-xl h-10 border border-white/10 cursor-pointer w-1/2 object-cover" onclick="this.src='/captcha?'+Date.now()" title="Click to Refresh">
-                    <input type="text" name="captcha" required placeholder="enter code" class="w-1/2 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white uppercase tracking-widest focus:outline-none focus:border-cyan-400 transition text-center">
-                </div>
-                <span class="text-[8px] text-gray-500 block font-mono">Click the image code above to refresh.</span>
-            </div>
-
             <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-purple-600/20">
                 Authenticate User
             </button>
@@ -163,16 +153,6 @@
                         <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 113.382 3.382m0.792-3.382a3 3 0 11-1.104-1.104m3.52 3.52l3.52 3.52M3 3l18 18"></path></svg>
                     </button>
                 </div>
-            </div>
-
-            <!-- Inline CAPTCHA Integration (Sign-Up) -->
-            <div class="bg-white/5 border border-white/5 p-4 rounded-xl space-y-3">
-                <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Bot Protection Challenge</label>
-                <div class="flex items-center space-x-3">
-                    <img id="register-captcha-img" src="/captcha" alt="CAPTCHA" class="rounded-xl h-10 border border-white/10 cursor-pointer w-1/2 object-cover" onclick="this.src='/captcha?'+Date.now()" title="Click to Refresh">
-                    <input type="text" name="captcha" required placeholder="enter code" class="w-1/2 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white uppercase tracking-widest focus:outline-none focus:border-purple-400 transition text-center">
-                </div>
-                <span class="text-[8px] text-gray-500 block font-mono">Click the image code above to refresh.</span>
             </div>
 
             <button type="submit" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-cyan-600/20">
@@ -244,9 +224,6 @@
             formLogin.classList.remove('hidden');
             formRegister.classList.add('hidden');
             regErrorBox.classList.add('hidden'); // Clear matching alerts on switch
-            
-            // Refresh login CAPTCHA code on tab switch
-            document.getElementById('login-captcha-img').src = '/captcha?' + Date.now();
         });
 
         tabRegisterBtn.addEventListener('click', () => {
@@ -256,9 +233,6 @@
             tabLoginBtn.classList.remove('border-cyan-400', 'text-white');
             formRegister.classList.remove('hidden');
             formLogin.classList.add('hidden');
-            
-            // Refresh register CAPTCHA code on tab switch
-            document.getElementById('register-captcha-img').src = '/captcha?' + Date.now();
         });
 
         // Client-side verification during form submission

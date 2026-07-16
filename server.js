@@ -3,7 +3,6 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
-const svgCaptcha = require('svg-captcha');
 const crypto = require('crypto');
 const path = require('path');
 
@@ -134,19 +133,6 @@ const transporter = nodemailer.createTransport({
 // 3. PORTAL ENDPOINTS
 // ========================================================================
 
-// GET: Generate and return a clean, legible grey-themed CAPTCHA
-app.get('/captcha', (req, res) => {
-    const captcha = svgCaptcha.create({
-        size: 4, // 4-character code
-        noise: 1, // minimal noise to maintain high legibility
-        color: false, // monochromatic (cleaner grey/white layout)
-        background: '#374151' // grey background (Tailwind gray-700)
-    });
-    req.session.captcha = captcha.text.toLowerCase(); // save text to compare on submit
-    res.type('svg');
-    res.status(200).send(captcha.data);
-});
-
 // Home Page
 app.get('/', (req, res) => {
     pool.query('SELECT * FROM blogs ORDER BY id DESC', (err, result) => {
@@ -163,18 +149,13 @@ app.get('/login', (req, res) => {
     res.render('login', { error: queryError, success: querySuccess });
 });
 
-// Student Sign-Up Routing (With Lowercase Normalization & CAPTCHA verification)
+// Student Sign-Up Routing (With Lowercase Normalization)
 app.post('/register', (req, res) => {
-    const { password, captcha } = req.body;
+    const { password } = req.body;
     const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
 
-    if (!email || !password || !captcha) {
+    if (!email || !password) {
         return res.render('login', { error: 'Please enter all registration credentials.', success: null });
-    }
-
-    // CAPTCHA verification check
-    if (!req.session.captcha || captcha.trim().toLowerCase() !== req.session.captcha) {
-        return res.render('login', { error: 'Incorrect CAPTCHA code. Please try again.', success: null });
     }
 
     const secureHash = bcrypt.hashSync(password, 10);
@@ -187,18 +168,13 @@ app.post('/register', (req, res) => {
     });
 });
 
-// Login Handlers (With CAPTCHA verification & Auto-Seed Admin Fallback)
+// Login Handlers (With Auto-Seed Admin Fallback)
 app.post('/login', (req, res) => {
-    const { password, captcha } = req.body;
+    const { password } = req.body;
     const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
 
-    if (!email || !password || !captcha) {
+    if (!email || !password) {
         return res.render('login', { error: 'Please enter all credentials.', success: null });
-    }
-
-    // CAPTCHA verification check
-    if (!req.session.captcha || captcha.trim().toLowerCase() !== req.session.captcha) {
-        return res.render('login', { error: 'Incorrect CAPTCHA code. Please try again.', success: null });
     }
 
     pool.query('SELECT * FROM users WHERE email = $1', [email], (err, result) => {
@@ -244,7 +220,7 @@ app.post('/login', (req, res) => {
 });
 
 // ========================================================================
-// 4. PASSWORD RECOVERY ROUTING (Nodemailer, Crypto & CAPTCHA safe)
+// 4. PASSWORD RECOVERY ROUTING (Nodemailer, Crypto & Postgres safe)
 // ========================================================================
 
 // GET: Render the Password Recovery request page
@@ -252,18 +228,12 @@ app.get('/forgot-password', (req, res) => {
     res.render('forgot-password', { error: null, success: null });
 });
 
-// POST: Generate random secure token and email the recovery link with CAPTCHA protection
+// POST: Generate random secure token and email the recovery link
 app.post('/forgot-password', (req, res) => {
-    const { captcha } = req.body;
     const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
 
-    if (!email || !captcha) {
-        return res.render('forgot-password', { error: 'Please populate all fields.', success: null });
-    }
-
-    // CAPTCHA check
-    if (!req.session.captcha || captcha.trim().toLowerCase() !== req.session.captcha) {
-        return res.render('forgot-password', { error: 'Incorrect CAPTCHA code. Please try again.', success: null });
+    if (!email) {
+        return res.render('forgot-password', { error: 'Please populate your email field.', success: null });
     }
 
     // Verify if email is actually registered
