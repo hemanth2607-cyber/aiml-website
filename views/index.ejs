@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VSB Engineering College | Department of AI &amp; ML</title>
+    <title>V.S.B. Engineering College | Department of AI &amp; ML</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -34,101 +34,38 @@
             pointer-events: none;
         }
 
-        /* Custom Cosmic Cursor */
+        /* Custom Cosmic Cursor Core */
         .custom-cursor {
-            width: 14px;
-            height: 14px;
-            background: #a855f7;
+            width: 12px;
+            height: 12px;
+            background: #06b6d4;
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
             z-index: 10000;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px #a855f7, 0 0 20px #2563eb;
+            box-shadow: 0 0 10px #06b6d4, 0 0 20px #2563eb;
             transition: transform 0.08s ease-out;
+            will-change: transform;
         }
 
-        .custom-cursor-trail {
-            width: 6px;
-            height: 6px;
-            background: #2563eb;
-            border-radius: 50%;
+        /* Entrance Overlay Section (Holding the Neural Network Canvas) */
+        #entrance-container {
             position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            opacity: 0.6;
-            transition: transform 0.15s ease-out;
-        }
-
-        /* Opaque Binary Matrix Gates */
-        .matrix-gate {
-            position: fixed;
-            top: 0;
-            width: 55vw;
-            height: 100vh;
+            inset: 0;
             background-color: #060214; /* Deep cybernetic dark violet background */
             z-index: 50;
-            display: flex;
-            overflow: hidden;
             pointer-events: none;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
-            will-change: transform, opacity, filter;
+            will-change: opacity, filter;
         }
 
-        #matrix-gate-left {
-            left: 0;
-            border-right: 2px solid rgba(6, 182, 212, 0.3); /* Cyan accent line */
-            transform-origin: bottom left; /* Pivot point for smooth skew rotation */
-        }
-
-        #matrix-gate-right {
-            right: 0;
-            border-left: 2px solid rgba(168, 85, 247, 0.3); /* Purple accent line */
-            transform-origin: bottom right; /* Pivot point for smooth skew rotation */
-        }
-
-        /* Matrix Column Styling */
-        .matrix-column {
+        #neural-canvas {
             position: absolute;
-            top: -20%;
-            font-family: monospace;
-            font-size: 10px;
-            line-height: 1.2;
-            color: rgba(6, 182, 212, 0.15); /* Soft glowing cyan */
-            text-shadow: 0 0 5px rgba(6, 182, 212, 0.3);
-            white-space: nowrap;
-            user-select: none;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 55;
             pointer-events: none;
-            animation: fall linear infinite;
-        }
-
-        /* Alternating purple column variations */
-        .matrix-column.purple-stream {
-            color: rgba(168, 85, 247, 0.15);
-            text-shadow: 0 0 5px rgba(168, 85, 247, 0.3);
-        }
-
-        @keyframes fall {
-            0% {
-                transform: translateY(0%);
-            }
-            100% {
-                transform: translateY(120vh);
-            }
-        }
-
-        @media (max-width: 640px) {
-            /* Disable custom cursor on mobile touch devices */
-            .custom-cursor, .custom-cursor-trail {
-                display: none !important;
-            }
-            * {
-                cursor: auto !important;
-            }
-            .matrix-column {
-                font-size: 8px; /* Slightly smaller digits on mobile */
-            }
         }
 
         /* Welcome Reveal Title Screen */
@@ -161,20 +98,30 @@
             border-color: rgba(6, 182, 212, 0.4);
             box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
         }
+
+        @media (max-width: 640px) {
+            /* Disable custom cursor and stardust trail on mobile touch devices */
+            .custom-cursor {
+                display: none !important;
+            }
+            * {
+                cursor: auto !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-[#03000a]">
 
-    <!-- Interactive Custom Cursors -->
+    <!-- Interactive Custom Cursor -->
     <div id="cursor-core" class="custom-cursor"></div>
-    <div id="cursor-trail" class="custom-cursor-trail"></div>
 
-    <!-- Cosmic Starfield Layer -->
+    <!-- Cosmic Starfield & Stardust Particle Layer -->
     <canvas id="starfield"></canvas>
 
-    <!-- Opaque Binary Matrix Gate Overlays -->
-    <div id="matrix-gate-left" class="matrix-gate"></div>
-    <div id="matrix-gate-right" class="matrix-gate"></div>
+    <!-- Opaque Neural Network Transition Overlay -->
+    <div id="entrance-container">
+        <canvas id="neural-canvas"></canvas>
+    </div>
 
     <!-- Entrance Title Card -->
     <div id="splash-screen" class="px-4">
@@ -316,17 +263,22 @@
 
     <!-- Scripting for Cursors, Stars, and Bidirectional Scroll Animations -->
     <script>
-        // Custom Cursor Logic
+        // Custom Cursor Coordinate tracking
         const cursorCore = document.getElementById('cursor-core');
-        const cursorTrail = document.getElementById('cursor-trail');
+        let mouseX = 0;
+        let mouseY = 0;
 
         document.addEventListener('mousemove', (e) => {
-            cursorCore.style.left = `${e.clientX}px`;
-            cursorCore.style.top = `${e.clientY}px`;
-            setTimeout(() => {
-                cursorTrail.style.left = `${e.clientX}px`;
-                cursorTrail.style.top = `${e.clientY}px`;
-            }, 45);
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            cursorCore.style.left = `${mouseX}px`;
+            cursorCore.style.top = `${mouseY}px`;
+
+            // Spawn Stardust particles on mouse move (only on desktop screens)
+            if (window.innerWidth > 640 && Math.random() > 0.3) {
+                spawnStardustParticle(mouseX, mouseY);
+            }
         });
 
         // Hover enlargements
@@ -337,14 +289,15 @@
             });
             element.addEventListener('mouseleave', () => {
                 cursorCore.style.transform = 'translate(-50%, -50%) scale(1)';
-                cursorCore.style.backgroundColor = '#a855f7';
+                cursorCore.style.backgroundColor = '#06b6d4';
             });
         });
 
-        // Canvas Stars Logic
+        // Canvas Stars & Stardust Particle Engine
         const canvas = document.getElementById('starfield');
         const ctx = canvas.getContext('2d');
         let stars = [];
+        let stardustParticles = []; // Trailing stardust array
 
         function resizeStars() {
             canvas.width = window.innerWidth;
@@ -366,11 +319,26 @@
             }
         }
 
+        // Spawn a trailing particle
+        function spawnStardustParticle(x, y) {
+            stardustParticles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 1.5, // Drift sideways
+                vy: (Math.random() - 0.5) * 1.5 + 0.5, // Slight downward sink
+                radius: 1 + Math.random() * 2,
+                opacity: 1,
+                decay: 0.015 + Math.random() * 0.015,
+                color: Math.random() > 0.5 ? '168, 85, 247' : '6, 182, 212' // Purple or Cyan
+            });
+        }
+
         function drawStarsFrame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#03000a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // 1. Draw background stars
             stars.forEach(star => {
                 ctx.beginPath();
                 ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
@@ -381,6 +349,31 @@
                 if (star.brightness < 0.1) star.brightness = 0.1;
                 if (star.brightness > 1) star.brightness = 1;
             });
+
+            // 2. Draw and update trailing cursor stardust
+            for (let i = stardustParticles.length - 1; i >= 0; i--) {
+                const p = stardustParticles[i];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                
+                // Glowing radial gradient for stardust look
+                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 2);
+                gradient.addColorStop(0, `rgba(${p.color}, ${p.opacity})`);
+                gradient.addColorStop(1, `rgba(${p.color}, 0)`);
+                
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Apply kinematics
+                p.x += p.vx;
+                p.y += p.vy;
+                p.opacity -= p.decay;
+
+                // Remove dead particles
+                if (p.opacity <= 0) {
+                    stardustParticles.splice(i, 1);
+                }
+            }
 
             requestAnimationFrame(drawStarsFrame);
         }
@@ -398,8 +391,7 @@
         const TOTAL_PAGE_MULTIPLIER = 4.0; // Total scroll range of the page
         const LERP_EASE = 0.06;            // Deceleration physics factor for scroll easing.
 
-        const lGate = document.getElementById('matrix-gate-left');
-        const rGate = document.getElementById('matrix-gate-right');
+        const entranceContainer = document.getElementById('entrance-container');
         const splashScreen = document.getElementById('splash-screen');
         const mainContent = document.getElementById('main-content');
 
@@ -419,23 +411,126 @@
             targetScrollY = window.scrollY;
         });
 
+
+        /* 
+           ========================================================================
+           NEURAL NETWORK DISSOCIATION ENGINE (CANVAS)
+           ========================================================================
+        */
+        const nCanvas = document.getElementById('neural-canvas');
+        const nCtx = nCanvas.getContext('2d');
+        let neuralNodes = [];
+        let neuralLines = [];
+
+        function resizeNeuralCanvas() {
+            nCanvas.width = window.innerWidth;
+            nCanvas.height = window.innerHeight;
+            initializeNeuralNetwork();
+        }
+
+        function initializeNeuralNetwork() {
+            neuralNodes = [];
+            neuralLines = [];
+
+            const w = nCanvas.width;
+            const h = nCanvas.height;
+
+            // Structure a 4-layer feedforward neural network (3-4-4-2)
+            const layers = [3, 4, 4, 2];
+            const nodeRadius = window.innerWidth < 640 ? 5 : 8;
+
+            // Generate Nodes in Layer Structures (relative coordinates)
+            layers.forEach((nodeCount, layerIdx) => {
+                const xPos = w * (0.2 + (layerIdx * 0.2)); // Space layers horizontally (20%, 40%, 60%, 80%)
+                
+                for (let i = 0; i < nodeCount; i++) {
+                    const yPos = h * (0.2 + (i * (0.6 / (nodeCount - 1 || 1)))); // Space nodes vertically
+                    
+                    neuralNodes.push({
+                        layer: layerIdx,
+                        idx: i,
+                        startX: xPos,
+                        startY: yPos,
+                        currentX: xPos,
+                        currentY: yPos,
+                        radius: nodeRadius,
+                        // Scatter directions when breaking down (random vectors)
+                        driftX: (Math.random() - 0.5) * w * 1.5,
+                        driftY: (Math.random() - 0.5) * h * 1.5,
+                        glowColor: layerIdx % 2 === 0 ? '6, 182, 212' : '168, 85, 247' // Cyan/Purple alternating layers
+                    });
+                }
+            });
+
+            // Map Connections (axon pathways) between adjacent layers
+            for (let i = 0; i < neuralNodes.length; i++) {
+                const nodeA = neuralNodes[i];
+                for (let j = i + 1; j < neuralNodes.length; j++) {
+                    const nodeB = neuralNodes[j];
+                    if (nodeB.layer === nodeA.layer + 1) {
+                        neuralLines.push({ from: nodeA, to: nodeB });
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('resize', resizeNeuralCanvas);
+        resizeNeuralCanvas();
+
         // Frame update rendering loop
         function updateParallaxFrames() {
             interpolatedScrollY += (targetScrollY - interpolatedScrollY) * LERP_EASE;
 
             const viewportHeight = window.innerHeight;
 
-            /* 1. CLOUD/MATRIX TIMELINE (Opens at standard fast speed, completes at exactly 1 viewport scroll) */
-            const cloudMaxDistance = viewportHeight * 1.0; 
-            const cloudProgress = Math.min(Math.max(interpolatedScrollY / cloudMaxDistance, 0), 1);
+            /* 1. NEURAL DISSOCIATION TIMELINE (Dissolves completely at exactly 1 viewport scroll) */
+            const breakDistance = viewportHeight * 1.1; 
+            const breakProgress = Math.min(Math.max(interpolatedScrollY / breakDistance, 0), 1);
             
-            // SKew rotate and fade out on scroll
-            lGate.style.transform = `translateX(${-cloudProgress * 100}%) rotate(${-cloudProgress * 8}deg)`;
-            rGate.style.transform = `translateX(${cloudProgress * 100}%) rotate(${cloudProgress * 8}deg)`;
-            lGate.style.opacity = `${1 - cloudProgress}`;
-            rGate.style.opacity = `${1 - cloudProgress}`;
-            lGate.style.filter = `blur(${cloudProgress * 8}px)`;
-            rGate.style.filter = `blur(${cloudProgress * 8}px)`;
+            // Render Neural Network state
+            nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
+            
+            // Calculate and Draw Lines (Axons)
+            const lineOpacity = Math.max(1 - breakProgress * 2.0, 0); // Lines snap/fade early
+            neuralLines.forEach(line => {
+                nCtx.beginPath();
+                nCtx.moveTo(line.from.currentX, line.from.startY + (line.from.driftY * breakProgress));
+                nCtx.lineTo(line.to.currentX, line.to.startY + (line.to.driftY * breakProgress));
+                nCtx.strokeStyle = `rgba(139, 92, 246, ${lineOpacity * 0.15})`;
+                nCtx.lineWidth = 1;
+                nCtx.stroke();
+            });
+
+            // Calculate, Draw and Move Nodes (Synapses)
+            neuralNodes.forEach(node => {
+                // Nodes drift further apart as progress ratio increases
+                node.currentX = node.startX + (node.driftX * breakProgress);
+                node.currentY = node.startY + (node.driftY * breakProgress);
+
+                nCtx.beginPath();
+                nCtx.arc(node.currentX, node.currentY, node.radius, 0, Math.PI * 2);
+                
+                // Inner solid core
+                nCtx.fillStyle = `rgba(255, 255, 255, ${1 - breakProgress})`;
+                nCtx.fill();
+
+                // Outer glowing aura
+                const nodeGlow = nCtx.createRadialGradient(node.currentX, node.currentY, 0, node.currentX, node.currentY, node.radius * 2.5);
+                nodeGlow.addColorStop(0, `rgba(${node.glowColor}, ${1 - breakProgress})`);
+                nodeGlow.addColorStop(1, `rgba(${node.glowColor}, 0)`);
+                nCtx.fillStyle = nodeGlow;
+                nCtx.fill();
+            });
+
+            // Fade the solid background block out smoothly to reveal starry space
+            entranceContainer.style.opacity = `${1 - breakProgress}`;
+            entranceContainer.style.filter = `blur(${breakProgress * 15}px)`;
+
+            if (breakProgress >= 1.0) {
+                entranceContainer.style.visibility = 'hidden';
+            } else {
+                entranceContainer.style.visibility = 'visible';
+            }
 
             /* 2. VSB TITLE FADE TIMELINE (Slower fade rate over 3.2 viewports, staying visible much longer) */
             const fadeMaxDistance = viewportHeight * 3.2; 
@@ -467,54 +562,6 @@
 
         // Run animation engine
         requestAnimationFrame(updateParallaxFrames);
-
-        /* 
-           ========================================================================
-           DYNAMIC FLOATING MATRIX GENERATOR
-           ========================================================================
-        */
-        function createMatrixStreams() {
-            const leftPanel = document.getElementById('matrix-gate-left');
-            const rightPanel = document.getElementById('matrix-gate-right');
-
-            const totalColumns = Math.floor(window.innerWidth / 40); // Determine column density based on viewport width
-
-            for (let i = 0; i < totalColumns; i++) {
-                const streamElement = document.createElement('div');
-                streamElement.className = 'matrix-column';
-                
-                // Add random purple stream variations
-                if (Math.random() > 0.5) {
-                    streamElement.classList.add('purple-stream');
-                }
-
-                // Generate random binary strings
-                let binaryContent = '';
-                const length = 15 + Math.floor(Math.random() * 25);
-                for (let j = 0; j < length; j++) {
-                    binaryContent += Math.round(Math.random()) + '<br>';
-                }
-                streamElement.innerHTML = binaryContent;
-
-                // Random positioning and physics offsets
-                streamElement.style.left = `${(i * (100 / totalColumns))}vw`;
-                streamElement.style.animationDuration = `${5 + Math.random() * 8}s`;
-                streamElement.style.animationDelay = `${Math.random() * -10}s`;
-                streamElement.style.opacity = `${0.05 + Math.random() * 0.2}`; // subtle transparency mix
-
-                // Split columns evenly across both gates
-                if (i < totalColumns / 2) {
-                    leftPanel.appendChild(streamElement);
-                } else {
-                    // Adjust horizontal offsets for right panel columns
-                    streamElement.style.left = `${((i - (totalColumns / 2)) * (100 / totalColumns)) * 2}vw`;
-                    rightPanel.appendChild(streamElement);
-                }
-            }
-        }
-        
-        // Execute generator
-        window.addEventListener('load', createMatrixStreams);
     </script>
 </body>
 </html>
