@@ -84,21 +84,63 @@
         </div>
 
         <!-- Setup Form -->
-        <form id="form-setup" action="/register/google-complete" method="POST" class="space-y-4">
+        <form id="form-setup" action="/register/google-complete" method="POST" class="space-y-4 text-xs sm:text-sm">
             <div>
                 <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Verified Google Email</label>
-                <!-- Email is disabled for input but still visible, we pass a hidden field to actually submit it -->
-                <input type="email" disabled value="<%= email %>" class="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-400 focus:outline-none">
+                <input type="email" disabled value="<%= email %>" class="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-gray-400 focus:outline-none">
             </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Academic Year</label>
+                    <select name="year" required class="w-full bg-[#110b24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 transition">
+                        <option value="1st year">1st year</option>
+                        <option value="2nd year">2nd year</option>
+                        <option value="3rd year">3rd year</option>
+                        <option value="4th year">4th year</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Department</label>
+                    <select name="department" required class="w-full bg-[#110b24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 transition">
+                        <option value="CSE">CSE</option>
+                        <option value="CSE(AIML)">CSE(AIML)</option>
+                        <option value="CCE">CCE</option>
+                        <option value="Bio Med">Bio Med</option>
+                        <option value="Chem">Chem</option>
+                        <option value="Mech">Mech</option>
+                        <option value="ECE">ECE</option>
+                        <option value="EEE">EEE</option>
+                        <option value="Civil">Civil</option>
+                        <option value="CSBS">CSBS</option>
+                        <option value="AIDS">AIDS</option>
+                        <option value="Bio Tech">Bio Tech</option>
+                        <option value="IT">IT</option>
+                    </select>
+                </div>
+            </div>
+
             <div>
                 <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Set Account Password</label>
-                <input type="password" id="register-password" name="password" required placeholder="enter your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+                <div class="relative">
+                    <input type="password" id="register-password" name="password" required placeholder="enter your password" class="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white focus:outline-none focus:border-cyan-400 transition">
+                    <button type="button" onclick="togglePasswordVisibility('register-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none">
+                        <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-3-3 3 3 0 013 3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 113.382 3.382m0.792-3.382a3 3 0 11-1.104-1.104m3.52 3.52l3.52 3.52M3 3l18 18"></path></svg>
+                    </button>
+                </div>
             </div>
             <div>
                 <label class="block text-[10px] uppercase text-gray-400 font-semibold tracking-wider mb-2">Confirm Account Password</label>
-                <input type="password" id="register-confirm" required placeholder="confirm your password" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+                <div class="relative">
+                    <input type="password" id="register-confirm" required placeholder="confirm your password" class="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white focus:outline-none focus:border-cyan-400 transition">
+                    <button type="button" onclick="togglePasswordVisibility('register-confirm', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none">
+                        <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-3-3 3 3 0 013 3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 113.382 3.382m0.792-3.382a3 3 0 11-1.104-1.104m3.52 3.52l3.52 3.52M3 3l18 18"></path></svg>
+                    </button>
+                </div>
             </div>
-            <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-purple-600/20">
+            <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition mt-6 shadow-lg shadow-purple-600/20 font-mono">
                 Complete Registration
             </button>
         </form>
@@ -118,6 +160,23 @@
         const regPassword = document.getElementById('register-password');
         const regConfirm = document.getElementById('register-confirm');
         const regErrorBox = document.getElementById('register-error-box');
+
+        // General password visibility toggle helper function
+        function togglePasswordVisibility(inputId, button) {
+            const input = document.getElementById(inputId);
+            const openIcon = button.querySelector('.eye-open');
+            const closedIcon = button.querySelector('.eye-closed');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                openIcon.classList.add('hidden');
+                closedIcon.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                openIcon.classList.remove('hidden');
+                closedIcon.classList.add('hidden');
+            }
+        }
 
         // Client-side verification during form submission
         formSetup.addEventListener('submit', (e) => {
