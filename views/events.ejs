@@ -85,7 +85,7 @@
         }
     </style>
 </head>
-<body class="p-4 sm:p-6 md:p-12 min-h-screen flex flex-col justify-between">
+<body class="p-4 sm:p-6 md:p-12 min-h-screen flex flex-col justify-between" data-logged-in="<%= !!user %>">
 
     <!-- Active Custom Cursor -->
     <div id="cursor-core" class="custom-cursor"></div>
@@ -110,39 +110,15 @@
             </div>
         </div>
 
-        <!-- AI ADVISOR CARD (Connected via Server-Side endpoint) -->
-        <section class="mb-12">
-            <div class="galaxy-card p-6 sm:p-8 rounded-3xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl"></div>
-                <div class="flex items-center space-x-3 mb-4">
-                    <span class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span>
-                    <h2 class="heading-font text-lg font-bold text-white tracking-wider">COSMIC AI EVENT ADVISER</h2>
-                </div>
-                <p class="text-xs text-gray-400 mb-6 max-w-xl leading-relaxed">
-                    Type your academic interests, preferred coding languages, or target skillsets below. The backend model will analyze our active database roster to recommend the best match for you.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4 mb-6">
-                    <input id="ai-query-input" type="text" placeholder="e.g., I want to build transformers and deep learning models for classification..." class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 transition">
-                    <button onclick="consultAiAdvisor()" class="bg-cyan-600 hover:bg-cyan-500 text-black font-semibold px-6 py-3 rounded-xl transition text-xs flex items-center justify-center space-x-2 shrink-0">
-                        <span>Consult Advisor</span>
-                    </button>
-                </div>
-                <div id="ai-response-box" class="hidden bg-black/30 border border-white/5 p-6 rounded-2xl text-xs sm:text-sm text-gray-300 leading-relaxed font-mono">
-                    <span class="text-cyan-400 block mb-2 font-bold">[ ADVISOR RECOMMENDATION ]</span>
-                    <p id="ai-response-text"></p>
-                </div>
-            </div>
-        </section>
-
         <!-- Events Filter & Search Controls -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <h3 class="heading-font text-xl font-bold tracking-wider">Active Events</h3>
             
             <div class="flex flex-wrap items-center gap-3 text-xs font-mono">
-                <button onclick="filterCategory('All')" class="category-filter-btn px-3 py-1.5 rounded-full border border-purple-500 text-purple-200 bg-purple-950/20">All</button>
-                <button onclick="filterCategory('Hackathon')" class="category-filter-btn px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:border-white/20">Hackathon</option>
-                <button onclick="filterCategory('Symposium')" class="category-filter-btn px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:border-white/20">Symposium</option>
-                <button onclick="filterCategory('Workshop')" class="category-filter-btn px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:border-white/20">Workshop</option>
+                <button onclick="filterCategory('All')" class="category-filter-btn px-3 py-1.5 rounded-full border border-purple-500 text-purple-200 bg-purple-950/20 font-semibold">All</button>
+                <button onclick="filterCategory('Hackathon')" class="category-filter-btn px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:border-white/20">Hackathon</button>
+                <button onclick="filterCategory('Symposium')" class="category-filter-btn px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:border-white/20">Symposium</button>
+                <button onclick="filterCategory('Workshop')" class="category-filter-btn px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:border-white/20">Workshop</button>
             </div>
         </div>
 
@@ -383,7 +359,7 @@
 
         /* 
            ========================================================================
-           DASHBOARD DIRECTORY CONTROLLERS (SEARCH, FILTER & MODALS)
+           DASHBOARD DIRECTORY CONTROLLERS (SEARCH & FILTER)
            ========================================================================
         */
         let currentFilter = 'All';
@@ -394,7 +370,7 @@
             // Adjust active styling of filter buttons
             document.querySelectorAll('.category-filter-btn').forEach(btn => {
                 if (btn.innerText === cat) {
-                    btn.className = "category-filter-btn px-3 py-1.5 rounded-full border border-purple-500 text-purple-200 bg-purple-950/20";
+                    btn.className = "category-filter-btn px-3 py-1.5 rounded-full border border-purple-500 text-purple-200 bg-purple-950/20 font-semibold";
                 } else {
                     btn.className = "category-filter-btn px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:border-white/20";
                 }
@@ -454,10 +430,6 @@
 
         function closeRegistrationModal() {
             document.getElementById('register-modal').classList.add('hidden');
-        }
-
-        function closePassModal() {
-            document.getElementById('pass-modal').classList.add('hidden');
         }
 
         // Global Holder of active generated ticket details
@@ -581,33 +553,6 @@
             doc.text('VSB SECURE ID', 315, 172);
 
             doc.save(`${activeGeneratedTicket.name}-VSB-Event-Pass.pdf`);
-        }
-
-        // --- AI Advisor Chat integrations ---
-        function consultAiAdvisor() {
-            const query = document.getElementById('ai-query-input').value;
-            if (!query.trim()) return;
-
-            document.getElementById('ai-response-box').classList.remove('hidden');
-            document.getElementById('ai-response-text').innerText = 'Analyzing active database nodes...';
-
-            fetch('/api/advisor', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: query })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.response) {
-                    document.getElementById('ai-response-text').innerText = data.response;
-                } else {
-                    document.getElementById('ai-response-text').innerText = 'System failed to contact the AI Advisor node.';
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('ai-response-text').innerText = 'Handshake error to AI Advisor servers.';
-            });
         }
     </script>
 </body>

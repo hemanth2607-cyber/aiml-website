@@ -86,7 +86,7 @@
         <% } %>
 
         <!-- Telemetry Statistics Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
             <div class="admin-card p-5 sm:p-6 rounded-2xl">
                 <span class="text-[10px] text-gray-400 font-mono block mb-1">Student Entities</span>
                 <span class="heading-font text-2xl sm:text-3xl font-bold text-cyan-400"><%= students.length %></span>
@@ -94,6 +94,10 @@
             <div class="admin-card p-5 sm:p-6 rounded-2xl">
                 <span class="text-[10px] text-gray-400 font-mono block mb-1">Staff Entities</span>
                 <span class="heading-font text-2xl sm:text-3xl font-bold text-cyan-400"><%= staff.length %></span>
+            </div>
+            <div class="admin-card p-5 sm:p-6 rounded-2xl">
+                <span class="text-[10px] text-gray-400 font-mono block mb-1">Event Registrations</span>
+                <span class="heading-font text-2xl sm:text-3xl font-bold text-pink-400"><%= registrations.length %></span>
             </div>
             <div class="admin-card p-5 sm:p-6 rounded-2xl">
                 <span class="text-[10px] text-gray-400 font-mono block mb-1">Database Engine</span>
@@ -106,6 +110,7 @@
             <button onclick="switchAdminTab('tab-announcements')" id="btn-tab-announcements" class="pb-3 border-b-2 border-cyan-400 text-white font-semibold focus:outline-none">Announcements</button>
             <button onclick="switchAdminTab('tab-academics')" id="btn-tab-academics" class="pb-3 border-b-2 border-transparent text-gray-400 font-semibold focus:outline-none">Academic Logs</button>
             <button onclick="switchAdminTab('tab-events')" id="btn-tab-events" class="pb-3 border-b-2 border-transparent text-gray-400 font-semibold focus:outline-none">Events</button>
+            <button onclick="switchAdminTab('tab-registrations')" id="btn-tab-registrations" class="pb-3 border-b-2 border-transparent text-gray-400 font-semibold focus:outline-none">Registrations</button>
             <button onclick="switchAdminTab('tab-staff')" id="btn-tab-staff" class="pb-3 border-b-2 border-transparent text-gray-400 font-semibold focus:outline-none">Manage Staff</button>
             <button onclick="switchAdminTab('tab-notify')" id="btn-tab-notify" class="pb-3 border-b-2 border-transparent text-gray-400 font-semibold focus:outline-none">Send Email</button>
         </div>
@@ -299,7 +304,125 @@
         </div>
 
         <!-- ========================================================================
-             TAB 4: MANAGE STAFF ACCOUNTS (Staff Registry and creation)
+             TAB 4: REGISTRATIONS DIRECTORY & CRUD (Excel Exporter Integrated)
+             ======================================================================== -->
+        <div id="tab-registrations" class="admin-tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
+            <!-- Add / Edit Registration Form -->
+            <div class="lg:col-span-1 admin-card p-5 sm:p-6 rounded-2xl h-fit">
+                <h2 class="heading-font text-xs sm:text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-6 uppercase">
+                    <%= editRegistration ? 'Modify Registration' : 'Create Registration' %>
+                </h2>
+                <form action="<%= editRegistration ? '/admin/registrations/update/' + editRegistration.id : '/admin/registrations/add' %>" method="POST" class="space-y-4 text-xs">
+                    <div>
+                        <label class="block text-gray-400 font-mono mb-1">STUDENT NAME</label>
+                        <input type="text" name="name" required value="<%= editRegistration ? editRegistration.name : '' %>" placeholder="e.g. Hemanth Kumar" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 font-mono mb-1">EMAIL ADDRESS</label>
+                        <input type="email" name="email" required value="<%= editRegistration ? editRegistration.email : '' %>" placeholder="e.g. name@vsb.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-gray-400 font-mono mb-1">YEAR</label>
+                            <select name="year" class="w-full bg-[#130d24] border border-white/10 rounded-xl px-2 py-2 text-white focus:outline-none">
+                                <option value="1st year" <%= editRegistration && editRegistration.year === '1st year' ? 'selected' : '' %>>1st year</option>
+                                <option value="2nd year" <%= editRegistration && editRegistration.year === '2nd year' ? 'selected' : '' %>>2nd year</option>
+                                <option value="3rd year" <%= editRegistration && editRegistration.year === '3rd year' ? 'selected' : '' %>>3rd year</option>
+                                <option value="4th year" <%= editRegistration && editRegistration.year === '4th year' ? 'selected' : '' %>>4th year</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 font-mono mb-1">DEPARTMENT</label>
+                            <select name="department" class="w-full bg-[#130d24] border border-white/10 rounded-xl px-2 py-2 text-white focus:outline-none">
+                                <option value="CSE(AIML)" <%= editRegistration && editRegistration.department === 'CSE(AIML)' ? 'selected' : '' %>>CSE(AIML)</option>
+                                <option value="CSE" <%= editRegistration && editRegistration.department === 'CSE' ? 'selected' : '' %>>CSE</option>
+                                <option value="IT" <%= editRegistration && editRegistration.department === 'IT' ? 'selected' : '' %>>IT</option>
+                                <option value="ECE" <%= editRegistration && editRegistration.department === 'ECE' ? 'selected' : '' %>>ECE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 font-mono mb-1">COLLEGE / INSTITUTION</label>
+                        <input type="text" name="college" required value="<%= editRegistration ? editRegistration.college : 'VSB Engineering College' %>" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 font-mono mb-1">EVENT NAME</label>
+                        <select name="eventName" class="w-full bg-[#130d24] border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none">
+                            <% if (events && events.length > 0) { %>
+                                <% events.forEach(e => { %>
+                                    <option value="<%= e.title %>" <%= editRegistration && editRegistration.event_name === e.title ? 'selected' : '' %>><%= e.title %></option>
+                                <% }) %>
+                            <% } else { %>
+                                <option value="No Events">No Active Events</option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="flex space-x-2 pt-2">
+                        <button type="submit" class="flex-1 py-2 bg-gradient-to-tr from-purple-600 to-cyan-500 text-white font-bold rounded-xl transition">
+                            <%= editRegistration ? 'Update Entry' : 'Create Entry' %>
+                        </button>
+                        <% if (editRegistration) { %>
+                            <a href="/admin?tab=registrations" class="px-4 py-2 bg-gray-800 text-gray-300 font-bold rounded-xl transition flex items-center">Cancel</a>
+                        <% } %>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Registrations Directory Table -->
+            <div class="lg:col-span-2 admin-card rounded-2xl overflow-hidden h-fit flex flex-col justify-between">
+                <div>
+                    <div class="px-6 py-4 border-b border-white/5 bg-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <h3 class="heading-font text-xs sm:text-sm font-bold text-white uppercase">Registrations Database</h3>
+                        
+                        <!-- Client-Side Excel Exporter button -->
+                        <button onclick="exportRegistrationsToCSV()" class="bg-emerald-950/40 border border-emerald-500/30 hover:bg-emerald-900/50 text-emerald-300 text-[10px] sm:text-xs px-3 py-1.5 rounded-xl transition font-mono flex items-center space-x-1.5">
+                            <span>Download Excel Report</span>
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto text-[10px] sm:text-xs">
+                        <table class="w-full text-left text-gray-300 min-w-[500px]">
+                            <thead class="bg-black/40 border-b border-white/5 text-gray-400 font-mono">
+                                <tr>
+                                    <th class="px-4 py-3">Pass ID</th>
+                                    <th class="px-4 py-3">Name</th>
+                                    <th class="px-4 py-3">Email</th>
+                                    <th class="px-4 py-3">Event</th>
+                                    <th class="px-4 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registrations-table-body" class="divide-y divide-white/5">
+                                <% if (registrations && registrations.length > 0) { %>
+                                    <% registrations.forEach(reg => { %>
+                                        <tr class="hover:bg-white/5 transition-colors">
+                                            <td class="px-4 py-4 font-mono text-cyan-400"><%= reg.ticket_id %></td>
+                                            <td class="px-4 py-4 font-bold text-white"><%= reg.name %></td>
+                                            <td class="px-4 py-4"><%= reg.email %></td>
+                                            <td class="px-4 py-4 text-purple-300"><%= reg.event_name %></td>
+                                            <!-- Additional fields hidden but captured by Excel exporter -->
+                                            <td class="hidden"><%= reg.year %></td>
+                                            <td class="hidden"><%= reg.department %></td>
+                                            <td class="hidden"><%= reg.college %></td>
+                                            <td class="hidden"><%= reg.created_at %></td>
+                                            
+                                            <td class="px-4 py-4 text-right space-x-2 font-mono whitespace-nowrap">
+                                                <a href="/admin?editRegId=<%= reg.id %>&tab=registrations" class="text-cyan-400">Edit</a>
+                                                <span class="text-gray-700">|</span>
+                                                <a href="/admin/registrations/delete/<%= reg.id %>" onclick="return confirm('Are you sure?');" class="text-red-400">Delete</a>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr><td colspan="5" class="px-4 py-8 text-center text-gray-500 font-mono">No active event registrations in the database.</td></tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================
+             TAB 5: MANAGE STAFF ACCOUNTS (Staff Registry and creation)
              ======================================================================== -->
         <div id="tab-staff" class="admin-tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
             <!-- Create Staff Form -->
@@ -375,7 +498,7 @@
         </div>
 
         <!-- ========================================================================
-             TAB 5: SEND EMAIL ANNOUNCEMENTS (With Recipient Group Dropdown)
+             TAB 6: SEND EMAIL ANNOUNCEMENTS
              ======================================================================== -->
         <div id="tab-notify" class="admin-tab-content hidden max-w-xl mx-auto admin-card p-6 rounded-2xl mb-12">
             <h2 class="heading-font text-xs sm:text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-6 uppercase">
@@ -404,7 +527,7 @@
             </form>
         </div>
 
-        <!-- Secured Student Telemetry Table (Now displays Year & Department) -->
+        <!-- Secured Student Telemetry Table -->
         <div class="admin-card rounded-2xl overflow-hidden mt-12">
             <div class="px-6 py-4 border-b border-white/5 bg-white/5">
                 <h2 class="heading-font text-xs sm:text-sm font-bold text-white uppercase">V.S.B. Registered Student Accounts</h2>
@@ -480,6 +603,58 @@
             // Highlight current active tab button
             document.getElementById('btn-tab-' + targetTabId.replace('tab-', '')).classList.add('border-cyan-400', 'text-white');
         }
+
+        // --- EXCEL/CSV SHEET EXPORTER LOGIC ---
+        function exportRegistrationsToCSV() {
+            const rows = [["Pass ID (Ticket ID)", "Visitor Name", "Email Address", "Registered Event", "Academic Year", "Department", "College of Origin", "Registration Timestamp"]];
+            
+            // Collect each row from table body
+            const tableRows = document.querySelectorAll('#registrations-table-body tr');
+            
+            tableRows.forEach(tr => {
+                const cells = tr.querySelectorAll('td');
+                if (cells.length > 0) {
+                    const rowData = [
+                        cells[0].innerText.trim(), // Ticket ID
+                        cells[1].innerText.trim(), // Name
+                        cells[2].innerText.trim(), // Email
+                        cells[3].innerText.trim(), // Event Name
+                        cells[4].innerText.trim(), // Year (hidden in UI table, but in DOM)
+                        cells[5].innerText.trim(), // Department (hidden in UI table, but in DOM)
+                        cells[6].innerText.trim(), // College (hidden in UI table, but in DOM)
+                        cells[7].innerText.trim()  // Timestamp (hidden in UI table, but in DOM)
+                    ];
+                    rows.push(rowData);
+                }
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            rows.forEach(row => {
+                // Escape quotes and format cells securely
+                const escapedRow = row.map(val => `"${val.replace(/"/g, '""')}"`);
+                csvContent += escapedRow.join(",") + "\r\n";
+            });
+
+            // Dispatch download trigger
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "VSB_AIML_Event_Registrations.csv");
+            document.body.appendChild(link);
+            
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Active URL Query check (Allows direct redirect and landing onto correct tab)
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam === 'registrations') {
+                switchAdminTab('tab-registrations');
+            }
+        });
     </script>
 </body>
 </html>

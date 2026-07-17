@@ -3,15 +3,11 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
-const { GoogleGenAI } = require('@google/genai'); // Added Gemini SDK import
 const crypto = require('crypto');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Initialize Gemini AI Client
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 // ========================================================================
 // 1. SET EXPRESS CONFIGURATIONS IMMEDIATELY (Before database & routes)
@@ -19,7 +15,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); // Allow server to parse incoming JSON payloads
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session Engine Configuration
@@ -223,7 +219,7 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-// SUB-PORTAL: Events Page (Dynamic content from DB passed in)
+// SUB-PORTAL: Events Page
 app.get('/events', checkAuth, (req, res) => {
     pool.query('SELECT * FROM events ORDER BY id DESC', (err, result) => {
         const events = result ? result.rows : [];
@@ -330,7 +326,7 @@ app.post('/login', (req, res) => {
 });
 
 // ========================================================================
-// 4. GOOGLE OAUTH 2.0 CHANNELS (Nodemailer and Fetch compatible)
+// 3. GOOGLE OAUTH 2.0 CHANNELS (Nodemailer and Fetch compatible)
 // ========================================================================
 
 // Redirect to Google Authentication Screen
@@ -594,9 +590,20 @@ app.get('/admin', checkAdmin, (req, res) => {
                     pool.query('SELECT * FROM events ORDER BY id DESC', (err, eResult) => {
                         const events = eResult ? eResult.rows : [];
                         
+                        // Query event registrations
                         pool.query('SELECT * FROM registrations ORDER BY id DESC', (err, rResult) => {
                             const registrations = rResult ? rResult.rows : [];
-                            res.render('admin', { students, staff, blogs, academics, events, registrations, editBlog: null, editAcademic: null, editEvent: null, success: emailSuccess, error: emailError });
+                            
+                            // Check if admin is currently editing a registration
+                            const editRegId = req.query.editRegId || null;
+                            if (editRegId) {
+                                pool.query('SELECT * FROM registrations WHERE id = $1', [editRegId], (err, editResult) => {
+                                    const editRegistration = editResult && editResult.rows.length > 0 ? editResult.rows[0] : null;
+                                    res.render('admin', { students, staff, blogs, academics, events, registrations, editRegistration, editBlog: null, editAcademic: null, editEvent: null, success: emailSuccess, error: emailError });
+                                });
+                            } else {
+                                res.render('admin', { students, staff, blogs, academics, events, registrations, editRegistration: null, editBlog: null, editAcademic: null, editEvent: null, success: emailSuccess, error: emailError });
+                            }
                         });
                     });
                 });
@@ -695,40 +702,6 @@ app.post('/admin/notify', checkAdmin, (req, res) => {
     });
 });
 
-// API: Server-side AI Advisor endpoint (Securely holds Gemini API Key)
-app.post('/api/advisor', checkAuth, async (req, res) => {
-    const { query } = req.body;
-    if (!query) return res.status(400).json({ error: 'Query prompt is required.' });
-
-    try {
-        // Query current DB events to inject as rich context to Gemini
-        pool.query('SELECT * FROM events ORDER BY id DESC', async (err, result) => {
-            if (err) return res.status(500).json({ error: 'Database context lookup failed.' });
-            const activeEvents = result ? result.rows : [];
-
-            const contextPrompt = `You are the specialized AI Academic Advisor for VSB Engineering College Department of AI & ML.
-            Here is our current active database roster of academic events, workshops, and symposiums: ${JSON.stringify(activeEvents)}.
-            
-            The student is asking: "${query}".
-            Recommend the absolute best matching event(s) for them from our active roster. Explain organically why it fits their interest, target skills, or career goals. Keep your tone encouraging, academic, and highly professional.`;
-
-            try {
-                const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: contextPrompt,
-                });
-                res.json({ response: response.text });
-            } catch (aiErr) {
-                console.error('Gemini API Error:', aiErr);
-                res.status(500).json({ error: 'Failed to connect with AI Advisor.' });
-            }
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'HANDSHAKE_ERROR' });
-    }
-});
-
 // API: Handle event registration inside Supabase and return unique ticket
 app.post('/api/events/register', checkAuth, (req, res) => {
     const { name, email, year, department, college, eventName } = req.body;
@@ -744,6 +717,41 @@ app.post('/api/events/register', checkAuth, (req, res) => {
         }
     );
 });
+
+// --- ADMIN REGISTRATION CRUD HANDLERS (Add, Edit, Delete) ---
+
+// CREATE Registration
+app.post('/admin/registrations/add', checkAdmin, (req, res) => {
+    const { name, email, year, department, college, eventName } = req.body;
+    const ticketId = `TKT-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    pool.query('INSERT INTO registrations (ticket_id, name, email, year, department, college, event_name) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [ticketId, name, email, year, department, college, eventName], (err) => {
+            if (err) console.error(err.message);
+            res.redirect('/admin?tab=registrations');
+        }
+    );
+});
+
+// UPDATE Registration
+app.post('/admin/registrations/update/:id', checkAdmin, (req, res) => {
+    const { name, email, year, department, college, eventName } = req.body;
+    pool.query('UPDATE registrations SET name = $1, email = $2, year = $3, department = $4, college = $5, event_name = $6 WHERE id = $7',
+        [name, email, year, department, college, eventName, req.params.id], (err) => {
+            if (err) console.error(err.message);
+            res.redirect('/admin?tab=registrations');
+        }
+    );
+});
+
+// DELETE Registration
+app.get('/admin/registrations/delete/:id', checkAdmin, (req, res) => {
+    pool.query('DELETE FROM registrations WHERE id = $1', [req.params.id], (err) => {
+        if (err) console.error(err.message);
+        res.redirect('/admin?tab=registrations');
+    });
+});
+
 
 // --- ADMIN MULTI-TABLE CRUD HANDLERS ---
 
