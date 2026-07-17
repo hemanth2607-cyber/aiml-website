@@ -547,16 +547,17 @@ app.post('/reset-password', (req, res) => {
     });
 });
 
-// Terminate Session
+// Terminate Session (Fixed Logout route)
 app.get('/logout', (req, res) => {
-    req.session.destroy(() => {
+    req.session.destroy((err) => {
+        if (err) console.error('Logout Session Destroy Error:', err);
         res.redirect('/');
     });
 });
 
 // Secure Administrator Control Board
 app.get('/admin', checkAdmin, (req, res) => {
-    const emailSuccess = req.query.notified === 'true' ? 'Notification email dispatched to all students.' : null;
+    const emailSuccess = req.query.notified === 'true' ? 'Notification email dispatched.' : null;
     const emailError = req.query.notified === 'error' ? 'Failed to dispatch email. Check SMTP settings.' : null;
 
     // Query students
@@ -633,33 +634,27 @@ app.get('/admin/students/delete/:id', checkAdmin, (req, res) => {
     });
 });
 
-// Send Announcements to Target Recipient Groups (BCC protected)
+// Send Email Announcements to Student or Staff Groups (Separate Announcer functionality)
 app.post('/admin/notify', checkAdmin, (req, res) => {
-    const { subject, message, recipientGroup } = req.body;
+    const { subject, message, recipientGroup } = req.body; // collects recipientGroup: 'student' or 'staff'
 
-    let sql = 'SELECT email FROM users WHERE role = $1';
-    let params = ['student'];
-
-    // Dynamically adjust recipient query based on target dropdown
-    if (recipientGroup === 'staff') {
-        sql = 'SELECT email FROM users WHERE role = $1';
-        params = ['staff'];
-    } else if (recipientGroup === 'all') {
-        sql = "SELECT email FROM users WHERE role IN ('student', 'staff')";
-        params = [];
+    if (!recipientGroup) {
+        return res.redirect('/admin?notified=error');
     }
 
-    // Fetch targets
-    pool.query(sql, params, (err, result) => {
-        if (err || !result || result.rows.length === 0) {
+    // Fetch matching role group email addresses
+    pool.query('SELECT email FROM users WHERE role = $1', [recipientGroup], (err, result) => {
+        if (err || result.rows.length === 0) {
             return res.redirect('/admin?notified=error');
         }
 
         const recipientEmails = result.rows.map(row => row.email);
 
+        const groupLabel = recipientGroup === 'staff' ? 'VSB AI & ML Staff' : 'VSB AI & ML Department';
+
         const mailOptions = {
-            from: `"VSB AI & ML Department" <${process.env.SMTP_USER}>`,
-            bcc: recipientEmails.join(','), // Send in BCC field to secure privacy
+            from: `"${groupLabel}" <${process.env.SMTP_USER}>`,
+            bcc: recipientEmails.join(','), 
             subject: subject,
             text: message,
             html: `<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #0d081c; color: #f3f4f6; border-radius: 12px;">
