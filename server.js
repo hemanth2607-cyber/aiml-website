@@ -3,11 +3,15 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
+const { GoogleGenAI } = require('@google/genai'); // Added Gemini SDK import
 const crypto = require('crypto');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize Gemini AI Client
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 // ========================================================================
 // 1. SET EXPRESS CONFIGURATIONS IMMEDIATELY (Before database & routes)
@@ -15,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Allow server to parse incoming JSON payloads
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session Engine Configuration
@@ -28,7 +33,7 @@ app.use(session({
     }
 }));
 
-// Route global context processor (Injected role metadata into global locals)
+// Route global context processor
 app.use((req, res, next) => {
     res.locals.user = req.session.userId ? { 
         email: req.session.userEmail, 
@@ -59,7 +64,7 @@ pool.connect((err, client, release) => {
 });
 
 function verifyDatabaseTables() {
-    // Users Table
+    // 1. Users Table
     pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
@@ -95,7 +100,7 @@ function verifyDatabaseTables() {
         });
     });
 
-    // Dynamic Blog / Department Updates Table
+    // 2. Announcements (Blogs) Table
     pool.query(`CREATE TABLE IF NOT EXISTS blogs (
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
@@ -105,19 +110,16 @@ function verifyDatabaseTables() {
         date TEXT NOT NULL
     )`, (err) => {
         if (err) console.error('Error creating blogs table:', err.message);
-
-        // Add VSB Departmental Default Content
         pool.query('SELECT COUNT(*) as count FROM blogs', (err, result) => {
             if (err) return console.error(err.message);
-            const count = parseInt(result.rows[0].count);
-            if (count === 0) {
+            if (parseInt(result.rows[0].count) === 0) {
                 pool.query(`INSERT INTO blogs (title, summary, content, category, date) VALUES 
                     ('VSB AI & ML Research Lab Setup', 'Our division has established a new high-performance computing interface for deep learning analysis.', 'Detailed lab contents...', 'Lab Updates', 'Oct 29, 2025')`);
             }
         });
     });
 
-    // Academic Updates Table
+    // 3. Academic Updates Table
     pool.query(`CREATE TABLE IF NOT EXISTS academics (
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
@@ -136,7 +138,7 @@ function verifyDatabaseTables() {
         });
     });
 
-    // Events Table
+    // 4. Events Table
     pool.query(`CREATE TABLE IF NOT EXISTS events (
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
@@ -153,6 +155,21 @@ function verifyDatabaseTables() {
                     ('Symposium on Generative AI', 'A day-long technical workshop on LLMs and diffusion models.', 'Dec 12, 2025', 'Main Auditorium')`);
             }
         });
+    });
+
+    // 5. Registrations Table
+    pool.query(`CREATE TABLE IF NOT EXISTS registrations (
+        id SERIAL PRIMARY KEY,
+        ticket_id TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        year TEXT NOT NULL,
+        department TEXT NOT NULL,
+        college TEXT NOT NULL,
+        event_name TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`, (err) => {
+        if (err) console.error('Error creating registrations table:', err.message);
     });
 }
 
@@ -206,7 +223,7 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-// SUB-PORTAL: Events Page
+// SUB-PORTAL: Events Page (Dynamic content from DB passed in)
 app.get('/events', checkAuth, (req, res) => {
     pool.query('SELECT * FROM events ORDER BY id DESC', (err, result) => {
         const events = result ? result.rows : [];
@@ -576,7 +593,11 @@ app.get('/admin', checkAdmin, (req, res) => {
                     
                     pool.query('SELECT * FROM events ORDER BY id DESC', (err, eResult) => {
                         const events = eResult ? eResult.rows : [];
-                        res.render('admin', { students, staff, blogs, academics, events, editBlog: null, editAcademic: null, editEvent: null, success: emailSuccess, error: emailError });
+                        
+                        pool.query('SELECT * FROM registrations ORDER BY id DESC', (err, rResult) => {
+                            const registrations = rResult ? rResult.rows : [];
+                            res.render('admin', { students, staff, blogs, academics, events, registrations, editBlog: null, editAcademic: null, editEvent: null, success: emailSuccess, error: emailError });
+                        });
                     });
                 });
             });
@@ -649,7 +670,6 @@ app.post('/admin/notify', checkAdmin, (req, res) => {
         }
 
         const recipientEmails = result.rows.map(row => row.email);
-
         const groupLabel = recipientGroup === 'staff' ? 'VSB AI & ML Staff' : 'VSB AI & ML Department';
 
         const mailOptions = {
@@ -673,6 +693,56 @@ app.post('/admin/notify', checkAdmin, (req, res) => {
             res.redirect('/admin?notified=true');
         });
     });
+});
+
+// API: Server-side AI Advisor endpoint (Securely holds Gemini API Key)
+app.post('/api/advisor', checkAuth, async (req, res) => {
+    const { query } = req.body;
+    if (!query) return res.status(400).json({ error: 'Query prompt is required.' });
+
+    try {
+        // Query current DB events to inject as rich context to Gemini
+        pool.query('SELECT * FROM events ORDER BY id DESC', async (err, result) => {
+            if (err) return res.status(500).json({ error: 'Database context lookup failed.' });
+            const activeEvents = result ? result.rows : [];
+
+            const contextPrompt = `You are the specialized AI Academic Advisor for VSB Engineering College Department of AI & ML.
+            Here is our current active database roster of academic events, workshops, and symposiums: ${JSON.stringify(activeEvents)}.
+            
+            The student is asking: "${query}".
+            Recommend the absolute best matching event(s) for them from our active roster. Explain organically why it fits their interest, target skills, or career goals. Keep your tone encouraging, academic, and highly professional.`;
+
+            try {
+                const response = await ai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: contextPrompt,
+                });
+                res.json({ response: response.text });
+            } catch (aiErr) {
+                console.error('Gemini API Error:', aiErr);
+                res.status(500).json({ error: 'Failed to connect with AI Advisor.' });
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'HANDSHAKE_ERROR' });
+    }
+});
+
+// API: Handle event registration inside Supabase and return unique ticket
+app.post('/api/events/register', checkAuth, (req, res) => {
+    const { name, email, year, department, college, eventName } = req.body;
+    const ticketId = `TKT-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    pool.query('INSERT INTO registrations (ticket_id, name, email, year, department, college, event_name) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+        [ticketId, name, email, year, department, college, eventName], (err, result) => {
+            if (err) {
+                console.error('Registration Database Save Error:', err.message);
+                return res.status(500).json({ error: 'Database save failure. Please retry.' });
+            }
+            res.json({ success: true, ticket: result.rows[0] });
+        }
+    );
 });
 
 // --- ADMIN MULTI-TABLE CRUD HANDLERS ---
