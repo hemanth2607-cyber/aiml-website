@@ -125,7 +125,7 @@
                 <% events.forEach(event => { %>
                     <article class="galaxy-card p-6 rounded-2xl flex flex-col justify-between h-96 event-card">
                         <div>
-                            <div class="flex justify-between items-center text-xs text-gray-500 mb-4 font-mono">
+                            <div class="flex justify-between items-center text-xs text-gray-500 mb-4 font-mono font-medium">
                                 <span class="border border-cyan-500/20 text-cyan-300 bg-cyan-950/20 px-2 py-0.5 rounded-full"><%= event.date %></span>
                                 <span>📍 <%= event.location %></span>
                             </div>
@@ -133,11 +133,18 @@
                             <p class="text-gray-400 text-xs leading-relaxed mb-6"><%= event.summary %></p>
                         </div>
 
+                        <!-- Data Attributes used to safely store Database strings and prevent Quote/Newline escaping bugs -->
                         <div class="flex space-x-3 pt-4 border-t border-white/5">
-                            <button onclick="openDetailModal('<%= event.title %>', '<%= event.date %>', '<%= event.location %>', '<%= event.summary %>')" class="flex-1 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-semibold transition border border-white/5">
+                            <button class="detail-trigger-btn flex-1 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-semibold transition border border-white/5"
+                                    data-title="<%= event.title %>"
+                                    data-category="<%= event.category %>"
+                                    data-date="<%= event.date %>"
+                                    data-location="<%= event.location %>"
+                                    data-summary="<%= event.summary %>">
                                 Details
-                              </button>
-                            <button onclick="openRegistrationModal('<%= event.title %>')" class="flex-1 py-2 bg-cyan-600 hover:bg-cyan-500 text-black rounded-xl text-xs font-semibold transition">
+                            </button>
+                            <button class="register-trigger-btn flex-1 py-2 bg-cyan-600 hover:bg-cyan-500 text-black rounded-xl text-xs font-semibold transition"
+                                    data-title="<%= event.title %>">
                                 Register
                             </button>
                         </div>
@@ -151,13 +158,14 @@
 
     <!-- EVENT DETAILS MODAL -->
     <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div class="w-full max-w-lg galaxy-card p-8 rounded-3xl relative">
+        <div class="w-full max-w-lg galaxy-card p-8 rounded-3xl relative animate-fade-in">
             <button onclick="closeDetailModal()" class="absolute top-6 right-6 text-gray-400 hover:text-white">✕</button>
+            <span id="modal-category" class="border border-purple-500/20 text-purple-300 bg-purple-950/20 px-2.5 py-0.5 rounded-full text-xs font-mono"></span>
             <h3 id="modal-title" class="heading-font text-2xl font-bold text-white mt-4 mb-2"></h3>
             <p id="modal-meta" class="text-xs text-gray-500 font-mono mb-6"></p>
             
             <h4 class="text-xs font-bold uppercase text-cyan-400 font-mono mb-2">SYNOPSIS</h4>
-            <p id="modal-desc" class="text-gray-300 text-xs sm:text-sm leading-relaxed mb-6"></p>
+            <p id="modal-desc" class="text-gray-300 text-xs sm:text-sm leading-relaxed mb-6 whitespace-pre-wrap"></p>
 
             <button id="modal-action-btn" class="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-black rounded-xl text-sm font-semibold transition">
                 Initiate Registration
@@ -236,7 +244,7 @@
                 </div>
                 <div>
                     <span class="text-gray-500 text-[10px] block">VISITOR NAME</span>
-                    <span id="pass-name" class="text-white font-bold">Hemanth</span>
+                    <span id="pass-name" class="text-white font-bold font-sans">Hemanth</span>
                 </div>
                 <div>
                     <span class="text-gray-500 text-[10px] block">EVENT TARGET</span>
@@ -349,7 +357,7 @@
 
         /* 
            ========================================================================
-           DASHBOARD DIRECTORY CONTROLLERS (SEARCH)
+           DASHBOARD DIRECTORY CONTROLLERS (SEARCH & DATA ATTRIBUTES BINDINGS)
            ========================================================================
         */
         function searchEvents() {
@@ -366,10 +374,30 @@
             });
         }
 
+        // Safe JavaScript listeners that read HTML5 Data Attributes to prevent quote-escaping bugs
+        document.querySelectorAll('.detail-trigger-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const title = this.getAttribute('data-title');
+                const category = this.getAttribute('data-category');
+                const date = this.getAttribute('data-date');
+                const location = this.getAttribute('data-location');
+                const summary = this.getAttribute('data-summary');
+                
+                openDetailModal(title, category, date, location, summary);
+            });
+        });
+
+        document.querySelectorAll('.register-trigger-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const title = this.getAttribute('data-title');
+                openRegistrationModal(title);
+            });
+        });
+
         // --- Modals Logic ---
-        function openDetailModal(title, date, location, summary) {
+        function openDetailModal(title, category, date, location, summary) {
             document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-category').innerText = "Academic Event";
+            document.getElementById('modal-category').innerText = category;
             document.getElementById('modal-meta').innerText = `${date} | ${location}`;
             document.getElementById('modal-desc').innerText = summary;
             
